@@ -14,45 +14,43 @@ from pages.aquaculture import aquaculture_layout
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True  # IMPORTANT pour multi-pages
+    suppress_callback_exceptions=True
 )
 
-server = app.server  # IMPORTANT pour Render
+server = app.server  # pour Render
 
 # ==========================
-# LAYOUT GLOBAL (SIDEBAR FIXE)
+# SIDEBAR PROPRE (SANS SECTEURS)
+# ==========================
+sidebar = html.Div([
+
+    html.H3("Dashboard", style={"padding": "10px"}),
+
+    html.Hr(),
+
+    dcc.Link("🏠 Accueil", href="/", style={"display": "block", "padding": "8px"}),
+    dcc.Link("📊 Secteurs", href="/secteurs", style={"display": "block", "padding": "8px"}),
+    dcc.Link("🗺 Cartographie", href="/cartographie", style={"display": "block", "padding": "8px"}),
+    dcc.Link("⚖ Comparaison", href="/comparaison", style={"display": "block", "padding": "8px"}),
+    dcc.Link("📈 Graphiques", href="/graphiques", style={"display": "block", "padding": "8px"}),
+
+], style={
+    "width": "18%",
+    "position": "fixed",
+    "height": "100%",
+    "backgroundColor": "#f8f9fa",
+    "padding": "10px"
+})
+
+# ==========================
+# LAYOUT GLOBAL
 # ==========================
 app.layout = html.Div([
 
     dcc.Location(id="url", refresh=False),
 
-    # ==========================
-    # SIDEBAR
-    # ==========================
-    html.Div([
-        html.H3("Dashboard", style={"padding": "10px"}),
+    sidebar,
 
-        html.Hr(),
-
-        dcc.Link("🏠 Accueil", href="/", style={"display": "block", "padding": "5px"}),
-        dcc.Link("📊 Secteurs", href="/secteurs", style={"display": "block", "padding": "5px"}),
-        dcc.Link("🌾 Agriculture", href="/agriculture", style={"display": "block", "padding": "5px"}),
-        dcc.Link("🐟 Aquaculture", href="/aquaculture", style={"display": "block", "padding": "5px"}),
-        dcc.Link("🗺 Cartographie", href="/cartographie", style={"display": "block", "padding": "5px"}),
-        dcc.Link("⚖ Comparaison", href="/comparaison", style={"display": "block", "padding": "5px"}),
-        dcc.Link("📈 Graphiques", href="/graphiques", style={"display": "block", "padding": "5px"}),
-
-    ], style={
-        "width": "18%",
-        "position": "fixed",
-        "height": "100%",
-        "backgroundColor": "#f8f9fa",
-        "padding": "10px"
-    }),
-
-    # ==========================
-    # CONTENT AREA
-    # ==========================
     html.Div(
         id="page-content",
         style={
@@ -60,6 +58,7 @@ app.layout = html.Div([
             "padding": "20px"
         }
     )
+
 ])
 
 # ==========================
@@ -69,10 +68,10 @@ app.layout = html.Div([
     Output("page-content", "children"),
     Input("url", "pathname")
 )
-def render_page(pathname):
+def display_page(pathname):
 
     if pathname == "/" or pathname is None:
-        return html.H2("🏠 Bienvenue sur le Dashboard")
+        return html.H2("🏠 Accueil Dashboard")
 
     if pathname == "/secteurs":
         return secteurs_layout
