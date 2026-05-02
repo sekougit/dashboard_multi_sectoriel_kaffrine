@@ -2,13 +2,11 @@ from dash import Dash, html, dcc, Input, Output
 import dash_bootstrap_components as dbc
 
 # ==========================
-# IMPORT PAGES
+# PAGES
 # ==========================
 from pages.secteurs import secteurs_layout
-# tu ajouteras ensuite :
-# from pages.cartographie import cartographie_layout
-# from pages.comparaison import comparaison_layout
-# from pages.graphiques import graphiques_layout
+from pages.agriculture import agriculture_layout
+from pages.aquaculture import aquaculture_layout
 
 # ==========================
 # APP INIT
@@ -16,93 +14,88 @@ from pages.secteurs import secteurs_layout
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True
+    suppress_callback_exceptions=True  # IMPORTANT pour multi-pages
 )
 
-server = app.server  # pour Render / déploiement
+server = app.server  # IMPORTANT pour Render
 
 # ==========================
-# SIDEBAR
+# LAYOUT GLOBAL (SIDEBAR FIXE)
 # ==========================
-sidebar = html.Div(
-    [
-        html.H2("Dashboard", className="text-white"),
+app.layout = html.Div([
+
+    dcc.Location(id="url", refresh=False),
+
+    # ==========================
+    # SIDEBAR
+    # ==========================
+    html.Div([
+        html.H3("Dashboard", style={"padding": "10px"}),
 
         html.Hr(),
 
-        dbc.Nav(
-            [
-                dbc.NavLink("Accueil", href="/", active="exact"),
-                dbc.NavLink("Secteurs", href="/secteurs", active="exact"),
-                dbc.NavLink("Cartographie", href="/cartographie", active="exact"),
-                dbc.NavLink("Comparaison", href="/comparaison", active="exact"),
-                dbc.NavLink("Graphiques", href="/graphiques", active="exact"),
-            ],
-            vertical=True,
-            pills=True
-        )
-    ],
-    style={
-        "padding": "20px",
-        "background-color": "#2c3e50",
-        "height": "100vh",
-        "color": "white"
-    }
-)
+        dcc.Link("🏠 Accueil", href="/", style={"display": "block", "padding": "5px"}),
+        dcc.Link("📊 Secteurs", href="/secteurs", style={"display": "block", "padding": "5px"}),
+        dcc.Link("🌾 Agriculture", href="/agriculture", style={"display": "block", "padding": "5px"}),
+        dcc.Link("🐟 Aquaculture", href="/aquaculture", style={"display": "block", "padding": "5px"}),
+        dcc.Link("🗺 Cartographie", href="/cartographie", style={"display": "block", "padding": "5px"}),
+        dcc.Link("⚖ Comparaison", href="/comparaison", style={"display": "block", "padding": "5px"}),
+        dcc.Link("📈 Graphiques", href="/graphiques", style={"display": "block", "padding": "5px"}),
 
-# ==========================
-# LAYOUT GLOBAL
-# ==========================
-app.layout = html.Div([
-    dcc.Location(id="url"),
+    ], style={
+        "width": "18%",
+        "position": "fixed",
+        "height": "100%",
+        "backgroundColor": "#f8f9fa",
+        "padding": "10px"
+    }),
 
-    dbc.Row([
-        dbc.Col(sidebar, width=2),
-        dbc.Col(html.Div(id="page-content"), width=10)
-    ])
+    # ==========================
+    # CONTENT AREA
+    # ==========================
+    html.Div(
+        id="page-content",
+        style={
+            "margin-left": "20%",
+            "padding": "20px"
+        }
+    )
 ])
 
 # ==========================
-# ROUTING CALLBACK
+# ROUTING
 # ==========================
 @app.callback(
     Output("page-content", "children"),
     Input("url", "pathname")
 )
-def display_page(pathname):
+def render_page(pathname):
 
-    if pathname == "/":
-        return html.Div([
-            html.H1("Accueil Dashboard"),
-            html.P("Bienvenue sur le dashboard multi-secteurs.")
-        ])
+    if pathname == "/" or pathname is None:
+        return html.H2("🏠 Bienvenue sur le Dashboard")
 
-    elif pathname == "/secteurs":
+    if pathname == "/secteurs":
         return secteurs_layout
 
-    elif pathname == "/cartographie":
-        return html.Div([
-            html.H2("Cartographie"),
-            html.P("Section en cours de développement")
-        ])
+    if pathname == "/agriculture":
+        return agriculture_layout
 
-    elif pathname == "/comparaison":
-        return html.Div([
-            html.H2("Comparaison"),
-            html.P("Analyse comparative des secteurs")
-        ])
+    if pathname == "/aquaculture":
+        return aquaculture_layout
 
-    elif pathname == "/graphiques":
-        return html.Div([
-            html.H2("Graphiques"),
-            html.P("Visualisations avancées")
-        ])
+    if pathname == "/cartographie":
+        return html.H2("🗺 Cartographie")
 
-    return html.H1("404 - Page introuvable")
+    if pathname == "/comparaison":
+        return html.H2("⚖ Comparaison")
 
+    if pathname == "/graphiques":
+        return html.H2("📈 Graphiques")
+
+    return html.H2("404 - Page introuvable")
 
 # ==========================
-# RUN SERVER
+# RUN
 # ==========================
 if __name__ == "__main__":
     app.run(debug=True)
