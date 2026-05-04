@@ -1,36 +1,33 @@
 import dash
-from dash import dcc, html
+from dash import html
 import dash_bootstrap_components as dbc
 
 app = dash.Dash(
     __name__,
     use_pages=True,
-    external_stylesheets=[
-        dbc.themes.BOOTSTRAP,
-        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    ],
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
     suppress_callback_exceptions=True
 )
 
 server = app.server
 
-# SIDEBAR MODERNE
-sidebar = html.Div(
-    [
-        html.H2("Dashboard", className="text-white"),
-        html.Hr(),
+# SIDEBAR
+sidebar = html.Div([
 
-        dbc.Nav([
-            dbc.NavLink("🏠 Accueil", href="/", active="exact"),
-            dbc.NavLink("📊 Secteurs", href="/secteurs", active="exact"),
-            dbc.NavLink("📈 Graphiques", href="/graphiques", active="exact"),
-            dbc.NavLink("🗺️ Cartographie", href="/cartographie", active="exact"),
-            dbc.NavLink("⚖️ Comparaison", href="/comparaison", active="exact"),
-            dbc.NavLink("📑 Statistiques", href="/statistiques", active="exact"),
-        ], vertical=True, pills=True),
-    ],
-    className="sidebar"
-)
+    html.H3("📊 Dashboard", className="text-white"),
+
+    html.Hr(),
+
+    dbc.Nav([
+        dbc.NavLink("🏠 Accueil", href="/", active="exact"),
+        dbc.NavLink("📊 Secteurs", href="/secteurs", active="exact"),
+        dbc.NavLink("📈 Graphiques", href="/graphiques"),
+        dbc.NavLink("🗺️ Cartographie", href="/cartographie"),
+        dbc.NavLink("⚖️ Comparaison", href="/comparaison"),
+        dbc.NavLink("📑 Statistiques", href="/statistiques"),
+    ], vertical=True, pills=True)
+
+], className="sidebar")
 
 content = html.Div(dash.page_container, className="content")
 
