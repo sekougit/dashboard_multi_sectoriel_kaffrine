@@ -1,169 +1,194 @@
-from dash import html, dcc, callback, Input, Output
+import dash
+from dash import html, dcc, Input, Output, callback, ctx, no_update
 import dash_bootstrap_components as dbc
 
-from utils.load_data import load_sector
+from utils.data_loader import get_all_sectors, load_sector_data, get_unique_values
+from utils.filters import filter_data
+from utils.kpi_calculator import compute_kpis
 
-# ==========================
-# SECTEURS
-# ==========================
-SECTEURS = [
-    "AGRICULTURE",
-    "AQUACULTURE",
-    "SANTE",
-    "EDUCATION",
-    "ENERGIE"
-]
+dash.register_page(__name__, path="/secteurs")
 
-def fmt(x):
-    try:
-        return f"{float(x):,.2f}"
-    except:
-        return "0.00"
+# =========================
+# FILTRES (STICKY)
+# =========================
+filters_bar = html.Div([
 
-# ==========================
-# LAYOUT
-# ==========================
-secteurs_layout = html.Div([
-
-    html.H2("Secteurs"),
-
-    # ==========================
-    # SELECT SECTEUR
-    # ==========================
-    dcc.Dropdown(
-        id="secteur-select",
-        options=[{"label": s, "value": s} for s in SECTEURS],
-        placeholder="Choisir un secteur"
-    ),
-
-    html.Br(),
-
-    # ==========================
-    # FILTRES
-    # ==========================
     dbc.Row([
 
-        dbc.Col(dcc.Dropdown(id="filter-region", placeholder="Région"), md=4),
-        dbc.Col(dcc.Dropdown(id="filter-departement", placeholder="Département"), md=4),
-        dbc.Col(dcc.Dropdown(id="filter-commune", placeholder="Commune"), md=4),
+        dbc.Col(dcc.Dropdown(
+            id="secteur-dd",
+            placeholder="Secteur",
+            clearable=False
+        ), width=2),
 
-    ]),
+        dbc.Col(dcc.Dropdown(
+            id="annee-dd",
+            placeholder="Année"
+        ), width=2),
 
-    html.Br(),
+        dbc.Col(dcc.Dropdown(
+            id="region-dd",
+            placeholder="Région"
+        ), width=2),
 
-    # ==========================
-    # KPI
-    # ==========================
-    html.Div(id="kpi-container")
+        dbc.Col(dcc.Dropdown(
+            id="departement-dd",
+            placeholder="Département"
+        ), width=2),
+
+        dbc.Col(dcc.Dropdown(
+            id="commune-dd",
+            placeholder="Commune"
+        ), width=2),
+
+    ])
+
+], className="filters-bar")
+
+
+# =========================
+# LAYOUT
+# =========================
+layout = html.Div([
+
+    html.H2("📊 Analyse par secteur"),
+
+    filters_bar,
+
+    html.Div(id="kpi-container", className="mt-4")
+
 ])
 
-# =========================================================
-# 🔥 CALLBACK 1 : LOAD FILTRES (RÉGION)
-# =========================================================
+
+# =========================
+# CALLBACK 1 : secteurs
+# =========================
 @callback(
-    Output("filter-region", "options"),
-    Input("secteur-select", "value")
+    Output("secteur-dd", "options"),
+    Input("secteur-dd", "id")
 )
-def load_regions(sector):
-
-    if not sector:
-        return []
-
-    df = load_sector(sector)
-
-    return [
-        {"label": r, "value": r}
-        for r in sorted(df["region"].dropna().unique())
-    ]
+def load_secteurs(_):
+    sectors = get_all_sectors()
+    return [{"label": s, "value": s} for s in sectors]
 
 
-# =========================================================
-# 🔥 CALLBACK 2 : LOAD DÉPARTEMENTS
-# =========================================================
+# =========================
+# CALLBACK 2 : CASCADE FILTRES
+# =========================
 @callback(
-    Output("filter-departement", "options"),
-    Input("secteur-select", "value"),
-    Input("filter-region", "value")
+    Output("annee-dd", "options"),
+    Output("region-dd", "options"),
+    Output("departement-dd", "options"),
+    Output("commune-dd", "options"),
+
+    Input("secteur-dd", "value"),
+    Input("region-dd", "value"),
+    Input("departement-dd", "value"),
 )
-def load_departements(sector, region):
+def update_filters(secteur, region, departement):
 
-    if not sector:
-        return []
+    if not secteur:
+        return [], [], [], []
 
-    df = load_sector(sector)
+    df = load_sector_data(secteur)
+
+    # REGION
+    regions = sorted(df["region"].dropna().unique())
 
     if region:
         df = df[df["region"] == region]
 
-    return [
-        {"label": d, "value": d}
-        for d in sorted(df["departement"].dropna().unique())
-    ]
-
-
-# =========================================================
-# 🔥 CALLBACK 3 : LOAD COMMUNES
-# =========================================================
-@callback(
-    Output("filter-commune", "options"),
-    Input("secteur-select", "value"),
-    Input("filter-departement", "value")
-)
-def load_communes(sector, departement):
-
-    if not sector:
-        return []
-
-    df = load_sector(sector)
+    # DEPARTEMENT
+    departements = sorted(df["departement"].dropna().unique())
 
     if departement:
         df = df[df["departement"] == departement]
 
-    return [
-        {"label": c, "value": c}
-        for c in sorted(df["commune"].dropna().unique())
-    ]
+    # COMMUNE (dépend du département)
+    communes = sorted(df["commune"].dropna().unique())
+
+    # ANNEE
+    annees = sorted(df["annee"].dropna().unique())
+
+    return (
+        [{"label": i, "value": i} for i in annees],
+        [{"label": i, "value": i} for i in regions],
+        [{"label": i, "value": i} for i in departements],
+        [{"label": i, "value": i} for i in communes],
+    )
 
 
-# =========================================================
-# 🔥 CALLBACK 4 : KPI DYNAMIQUE
-# =========================================================
+# =========================
+# CALLBACK 3 : RESET CASCADE (SANS CONFLIT)
+# =========================
+@callback(
+    Output("departement-dd", "value"),
+    Output("commune-dd", "value"),
+    Input("region-dd", "value"),
+    Input("departement-dd", "value"),
+)
+def reset_filters(region, departement):
+
+    trigger = ctx.triggered_id
+
+    # si région change → reset tout en dessous
+    if trigger == "region-dd":
+        return None, None
+
+    # si département change → reset commune
+    elif trigger == "departement-dd":
+        return no_update, None
+
+    return no_update, no_update
+
+
+# =========================
+# CALLBACK 4 : RESET ANNEE
+# =========================
+@callback(
+    Output("annee-dd", "value"),
+    Input("secteur-dd", "value")
+)
+def reset_annee(secteur):
+    return None
+
+
+# =========================
+# CALLBACK 5 : KPI DESIGN PRO
+# =========================
 @callback(
     Output("kpi-container", "children"),
-    [
-        Input("secteur-select", "value"),
-        Input("filter-region", "value"),
-        Input("filter-departement", "value"),
-        Input("filter-commune", "value")
-    ]
+    Input("secteur-dd", "value"),
+    Input("annee-dd", "value"),
+    Input("region-dd", "value"),
+    Input("departement-dd", "value"),
+    Input("commune-dd", "value"),
 )
-def display_kpis(sector, region, dep, com):
+def update_kpis(secteur, annee, region, departement, commune):
 
-    if not sector:
-        return html.H4("Sélectionne un secteur")
+    if not secteur:
+        return html.Div("Veuillez sélectionner un secteur")
 
-    df = load_sector(sector)
+    df = load_sector_data(secteur)
+    df = filter_data(df, secteur, annee, region, departement, commune)
 
-    if region:
-        df = df[df["region"] == region]
-    if dep:
-        df = df[df["departement"] == dep]
-    if com:
-        df = df[df["commune"] == com]
+    if df.empty:
+        return html.Div("Aucune donnée disponible")
 
-    numeric_cols = df.select_dtypes(include=["number"]).columns
+    kpis = compute_kpis(df)
 
-    kpis = [
-        dbc.Col(
-            dbc.Card(
-                dbc.CardBody([
-                    html.H6(col),
-                    html.H4(fmt(df[col].sum()))
-                ])
-            ),
-            md=3
+    cards = []
+
+    for k, v in kpis.items():
+        cards.append(
+            dbc.Col(
+                html.Div([
+                    html.Div(k.upper(), className="kpi-title"),
+                    html.Div(f"{v['total']:.0f}", className="kpi-value"),
+                    html.Div(f"Moyenne: {v['moyenne']:.2f}", className="kpi-sub")
+                ], className="kpi-card"),
+                width=3
+            )
         )
-        for col in numeric_cols
-    ]
 
-    return dbc.Row(kpis)
+    return dbc.Row(cards, className="g-3")
