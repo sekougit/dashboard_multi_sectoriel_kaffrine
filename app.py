@@ -1,5 +1,5 @@
 import dash
-from dash import html
+from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 app = dash.Dash(
@@ -13,11 +13,8 @@ server = app.server
 
 # SIDEBAR
 sidebar = html.Div([
-
     html.H3("📊 Dashboard", className="text-white"),
-
     html.Hr(),
-
     dbc.Nav([
         dbc.NavLink("🏠 Accueil", href="/", active="exact"),
         dbc.NavLink("📊 Secteurs", href="/secteurs", active="exact"),
@@ -26,12 +23,15 @@ sidebar = html.Div([
         dbc.NavLink("⚖️ Comparaison", href="/comparaison"),
         dbc.NavLink("📑 Statistiques", href="/statistiques"),
     ], vertical=True, pills=True)
-
 ], className="sidebar")
 
 content = html.Div(dash.page_container, className="content")
 
-app.layout = html.Div([sidebar, content])
+app.layout = html.Div([
+    dcc.Store(id="global-filters", storage_type="session"),  # 🔥 persistence
+    sidebar,
+    content
+])
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,59 +1,32 @@
 import dash
-from dash import html, dcc, Input, Output, callback, ctx, no_update
+from dash import html, dcc, Input, Output, callback, ctx, no_update, State
 import dash_bootstrap_components as dbc
 
 from utils.data_loader import get_all_sectors, load_sector_data
-from utils.filters import filter_data
 
 dash.register_page(__name__, path="/secteurs")
 
 # =========================
-# FILTRES
+# 🔥 COMPONENT DROPDOWN AVEC LABEL
 # =========================
-filters_bar = html.Div([
+def dropdown_block(label, component):
+    return html.Div([
+        html.Div(label, className="filter-label"),
+        component
+    ], className="filter-block")
 
-    dbc.Row([
 
-        dbc.Col(dcc.Dropdown(
-            id="secteur-dd",
-            placeholder="Secteur",
-            clearable=False
-        ), width=2),
-
-        dbc.Col(dcc.Dropdown(
-            id="annee-dd",
-            placeholder="Année",
-            multi=True
-        ), width=2),
-
-        dbc.Col(dcc.Dropdown(
-            id="region-dd",
-            placeholder="Région",
-            multi=True
-        ), width=2),
-
-        dbc.Col(dcc.Dropdown(
-            id="departement-dd",
-            placeholder="Département",
-            multi=True
-        ), width=2),
-
-        dbc.Col(dcc.Dropdown(
-            id="commune-dd",
-            placeholder="Commune",
-            multi=True
-        ), width=2),
-
-        # 🔥 INDICATEURS
-        dbc.Col(dcc.Dropdown(
-            id="indicateur-dd",
-            placeholder="Indicateurs",
-            multi=True
-        ), width=2),
-
-    ])
-
-], className="filters-bar")
+# =========================
+# 🔥 FORMAT NOM KPI
+# =========================
+def format_kpi_name(name):
+    return (
+        name.replace("_", " ")
+            .replace("indicateur", "ind.")
+            .replace("nombre", "nbr")
+            .replace("population", "pop")
+            .title()
+    )
 
 
 # =========================
@@ -63,11 +36,40 @@ layout = html.Div([
 
     html.H2("📊 Analyse multi-sectorielle"),
 
-    filters_bar,
+    html.Div([
+        dbc.Row([
+
+            dbc.Col(dropdown_block("📊 Secteur",
+                dcc.Dropdown(id="secteur-dd", clearable=False)
+            ), width=2),
+
+            dbc.Col(dropdown_block("📅 Année",
+                dcc.Dropdown(id="annee-dd", multi=True)
+            ), width=2),
+
+            dbc.Col(dropdown_block("🌍 Région",
+                dcc.Dropdown(id="region-dd", multi=True)
+            ), width=2),
+
+            dbc.Col(dropdown_block("🏙️ Département",
+                dcc.Dropdown(id="departement-dd", multi=True)
+            ), width=2),
+
+            dbc.Col(dropdown_block("📍 Commune",
+                dcc.Dropdown(id="commune-dd", multi=True)
+            ), width=2),
+
+            dbc.Col(dropdown_block("📈 Indicateurs",
+                dcc.Dropdown(id="indicateur-dd", multi=True)
+            ), width=2),
+
+        ])
+    ], className="filters-bar"),
 
     html.Div(id="kpi-container")
 
 ])
+
 
 # =========================
 # SECTEURS
@@ -81,7 +83,7 @@ def load_secteurs(_):
 
 
 # =========================
-# INDICATEURS DYNAMIQUES
+# INDICATEURS
 # =========================
 @callback(
     Output("indicateur-dd", "options"),
@@ -93,19 +95,15 @@ def load_indicateurs(secteur):
         return []
 
     df = load_sector_data(secteur)
-
     exclude = ["annee", "region", "departement", "commune", "secteur"]
 
-    cols = [
-        c for c in df.columns
-        if c not in exclude and df[c].dtype != "object"
-    ]
+    cols = [c for c in df.columns if c not in exclude and df[c].dtype != "object"]
 
     return [{"label": c, "value": c} for c in cols]
 
 
 # =========================
-# CASCADE FILTRES
+# CASCADE
 # =========================
 @callback(
     Output("annee-dd", "options"),
@@ -124,12 +122,12 @@ def update_filters(secteur, regions, departements):
 
     df = load_sector_data(secteur)
 
-    all_regions = sorted(df["region"].dropna().unique())
+    regions_all = sorted(df["region"].dropna().unique())
 
     if regions:
         df = df[df["region"].isin(regions)]
 
-    all_departements = sorted(df["departement"].dropna().unique())
+    deps_all = sorted(df["departement"].dropna().unique())
 
     if departements:
         df = df[df["departement"].isin(departements)]
@@ -139,36 +137,80 @@ def update_filters(secteur, regions, departements):
 
     return (
         [{"label": i, "value": i} for i in annees],
-        [{"label": i, "value": i} for i in all_regions],
-        [{"label": i, "value": i} for i in all_departements],
+        [{"label": i, "value": i} for i in regions_all],
+        [{"label": i, "value": i} for i in deps_all],
         [{"label": i, "value": i} for i in communes],
     )
 
 
 # =========================
-# RESET SAFE
+# RESTORE + RESET
 # =========================
 @callback(
+    Output("secteur-dd", "value"),
+    Output("annee-dd", "value"),
+    Output("region-dd", "value"),
     Output("departement-dd", "value"),
     Output("commune-dd", "value"),
+    Output("indicateur-dd", "value"),
+
     Input("region-dd", "value"),
     Input("departement-dd", "value"),
+
+    State("global-filters", "data"),
 )
-def reset_filters(region, departement):
+def manage_filters(region, departement, data):
 
     trigger = ctx.triggered_id
 
     if trigger == "region-dd":
-        return None, None
+        return no_update, no_update, no_update, None, None, no_update
 
     if trigger == "departement-dd":
-        return no_update, None
+        return no_update, no_update, no_update, no_update, None, no_update
 
-    return no_update, no_update
+    if data:
+        return (
+            data.get("secteur"),
+            data.get("annee"),
+            data.get("region"),
+            data.get("departement"),
+            data.get("commune"),
+            data.get("indicateur"),
+        )
+
+    return no_update, no_update, no_update, no_update, no_update, no_update
 
 
 # =========================
-# KPI FINAL
+# SAVE
+# =========================
+@callback(
+    Output("global-filters", "data"),
+
+    Input("secteur-dd", "value"),
+    Input("annee-dd", "value"),
+    Input("region-dd", "value"),
+    Input("departement-dd", "value"),
+    Input("commune-dd", "value"),
+    Input("indicateur-dd", "value"),
+
+    prevent_initial_call=True
+)
+def save_filters(secteur, annee, region, departement, commune, indicateur):
+
+    return {
+        "secteur": secteur,
+        "annee": annee,
+        "region": region,
+        "departement": departement,
+        "commune": commune,
+        "indicateur": indicateur
+    }
+
+
+# =========================
+# KPI
 # =========================
 @callback(
     Output("kpi-container", "children"),
@@ -204,14 +246,33 @@ def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
     if not indicateurs:
         indicateurs = [c for c in df.columns if c not in exclude]
 
-    return dbc.Row([
-        dbc.Col(
-            html.Div([
-                html.Div(ind.upper(), className="kpi-title"),
-                html.Div(f"{df[ind].sum():.0f}", className="kpi-value"),
-                html.Div(f"Moy: {df[ind].mean():.2f}", className="kpi-sub")
-            ], className="kpi-card"),
-            width=3
+    cards = []
+
+    for ind in indicateurs:
+
+        if ind not in df.columns:
+            continue
+
+        total = df[ind].sum()
+        moyenne = df[ind].mean()
+
+        total_fmt = f"{total:,.0f}".replace(",", " ")
+        moy_fmt = f"{moyenne:,.2f}".replace(",", " ")
+
+        cards.append(
+            dbc.Col(
+                html.Div([
+
+                    html.Div(format_kpi_name(ind), className="kpi-title", title=ind),
+
+                    html.Div(total_fmt, className="kpi-value"),
+
+                    html.Div(f"● Moyenne : {moy_fmt}", className="kpi-sub")
+
+                ], className="kpi-card"),
+
+                xs=12, sm=6, md=4, lg=3
+            )
         )
-        for ind in indicateurs if ind in df.columns
-    ], className="g-3")
+
+    return dbc.Row(cards, className="g-3")
