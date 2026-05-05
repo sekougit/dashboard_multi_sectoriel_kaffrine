@@ -90,3 +90,41 @@ body {
     color: #16a34a;
     margin-bottom: 5px;
 }
+
+.filters-summary {
+    background: white;
+    padding: 12px;
+    border-radius: 12px;
+    border-left: 5px solid #22c55e;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.filter-badge {
+    background: #dcfce7;
+    color: #166534;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.filter-block {
+    background: white;
+    border-radius: 12px;
+    padding: 10px;
+    border: 2px solid #dcfce7;
+}
+
+.filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 5px;
+}
+
+.kpi-context {
+    margin-top: 8px;
+    font-size: 11px;
+    color: #475569;
+    line-height: 1.3;
+}

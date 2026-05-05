@@ -6,8 +6,9 @@ from utils.data_loader import get_all_sectors, load_sector_data
 
 dash.register_page(__name__, path="/secteurs")
 
+
 # =========================
-# 🔥 COMPONENT DROPDOWN AVEC LABEL
+# COMPONENTS
 # =========================
 def dropdown_block(label, component):
     return html.Div([
@@ -16,9 +17,6 @@ def dropdown_block(label, component):
     ], className="filter-block")
 
 
-# =========================
-# 🔥 FORMAT NOM KPI
-# =========================
 def format_kpi_name(name):
     return (
         name.replace("_", " ")
@@ -34,7 +32,7 @@ def format_kpi_name(name):
 # =========================
 layout = html.Div([
 
-    html.H2("📊 Analyse multi-sectorielle"),
+    html.H2(id="dynamic-title"),
 
     html.Div([
         dbc.Row([
@@ -66,13 +64,15 @@ layout = html.Div([
         ])
     ], className="filters-bar"),
 
+    html.Div(id="filters-summary", className="filters-summary mt-3"),
+
     html.Div(id="kpi-container")
 
 ])
 
 
 # =========================
-# SECTEURS
+# LOAD SECTEURS
 # =========================
 @callback(
     Output("secteur-dd", "options"),
@@ -82,8 +82,19 @@ def load_secteurs(_):
     return [{"label": s, "value": s} for s in get_all_sectors()]
 
 
+@callback(
+    Output("dynamic-title", "children"),
+    Input("secteur-dd", "value")
+)
+def update_title(secteur):
+
+    if not secteur:
+        return "📊 Analyse multi-sectorielle"
+
+    return f"📊 Analyse multi-sectorielle - {secteur}"
+
 # =========================
-# INDICATEURS
+# LOAD INDICATEURS
 # =========================
 @callback(
     Output("indicateur-dd", "options"),
@@ -103,7 +114,7 @@ def load_indicateurs(secteur):
 
 
 # =========================
-# CASCADE
+# CASCADE FILTRES
 # =========================
 @callback(
     Output("annee-dd", "options"),
@@ -183,7 +194,7 @@ def manage_filters(region, departement, data):
 
 
 # =========================
-# SAVE
+# SAVE FILTERS
 # =========================
 @callback(
     Output("global-filters", "data"),
@@ -210,7 +221,48 @@ def save_filters(secteur, annee, region, departement, commune, indicateur):
 
 
 # =========================
-# KPI
+# AFFICHAGE FILTRES
+# =========================
+@callback(
+    Output("filters-summary", "children"),
+
+    Input("secteur-dd", "value"),
+    Input("annee-dd", "value"),
+    Input("region-dd", "value"),
+    Input("departement-dd", "value"),
+    Input("commune-dd", "value"),
+    Input("indicateur-dd", "value"),
+)
+def display_filters(secteur, annees, regions, departements, communes, indicateurs):
+
+    def badge(label, values):
+        if not values:
+            return None
+
+        if isinstance(values, list):
+            val = ", ".join(map(str, values))
+        else:
+            val = str(values)
+
+        if len(val) > 40:
+            val = val[:40] + "..."
+
+        return html.Span(f"{label}: {val}", className="filter-badge")
+
+    badges = [
+        #badge("📊 Secteur", secteur),
+        badge("📅 Année", annees),
+        badge("🌍 Région", regions),
+        badge("🏙️ Département", departements),
+        badge("📍 Commune", communes),
+        #badge("📈 Indicateur", indicateurs),
+    ]
+
+    return html.Div([b for b in badges if b], className="d-flex flex-wrap gap-2")
+
+
+# =========================
+# KPI + COMPARAISON
 # =========================
 @callback(
     Output("kpi-container", "children"),
@@ -229,6 +281,7 @@ def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
 
     df = load_sector_data(secteur)
 
+    # 🔹 filtres
     if annees:
         df = df[df["annee"].isin(annees)]
     if regions:
@@ -246,33 +299,81 @@ def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
     if not indicateurs:
         indicateurs = [c for c in df.columns if c not in exclude]
 
-    cards = []
+    # =========================
+    # 🔥 DÉTECTION MODE COMPARAISON
+    # =========================
+    compare_dim = None
 
-    for ind in indicateurs:
+    if annees and len(annees) > 1:
+        compare_dim = "annee"
+    elif departements and len(departements) > 1:
+        compare_dim = "departement"
+    elif communes and len(communes) > 1:
+        compare_dim = "commune"
+    else:
+        compare_dim = None
 
-        if ind not in df.columns:
-            continue
+    # =========================
+    # 🔥 MODE NORMAL
+    # =========================
+    if not compare_dim:
 
-        total = df[ind].sum()
-        moyenne = df[ind].mean()
+        cards = []
 
-        total_fmt = f"{total:,.0f}".replace(",", " ")
-        moy_fmt = f"{moyenne:,.2f}".replace(",", " ")
+        for ind in indicateurs:
+            if ind not in df.columns:
+                continue
 
-        cards.append(
-            dbc.Col(
-                html.Div([
+            total = df[ind].sum()
+            moyenne = df[ind].mean()
 
-                    html.Div(format_kpi_name(ind), className="kpi-title", title=ind),
-
-                    html.Div(total_fmt, className="kpi-value"),
-
-                    html.Div(f"● Moyenne : {moy_fmt}", className="kpi-sub")
-
-                ], className="kpi-card"),
-
-                xs=12, sm=6, md=4, lg=3
+            cards.append(
+                dbc.Col(
+                    html.Div([
+                        html.Div(format_kpi_name(ind), className="kpi-title"),
+                        html.Div(f"{total:,.0f}".replace(",", " "), className="kpi-value"),
+                        html.Div(f"Moy: {moyenne:,.2f}".replace(",", " "), className="kpi-sub")
+                    ], className="kpi-card"),
+                    width=3
+                )
             )
+
+        return dbc.Row(cards, className="g-3")
+
+    # =========================
+    # 🔥 MODE COMPARAISON
+    # =========================
+    groups = df.groupby(compare_dim)
+
+    blocks = []
+
+    for name, group in groups:
+
+        row_cards = []
+
+        for ind in indicateurs:
+            if ind not in group.columns:
+                continue
+
+            total = group[ind].sum()
+            moyenne = group[ind].mean()
+
+            row_cards.append(
+                dbc.Col(
+                    html.Div([
+                        html.Div(format_kpi_name(ind), className="kpi-title"),
+                        html.Div(f"{total:,.0f}".replace(",", " "), className="kpi-value"),
+                        html.Div(f"Moy: {moyenne:,.2f}".replace(",", " "), className="kpi-sub")
+                    ], className="kpi-card"),
+                    width=3
+                )
+            )
+
+        blocks.append(
+            html.Div([
+                html.H5(f"📊 {compare_dim.upper()} : {name}", className="mt-4"),
+                dbc.Row(row_cards, className="g-3")
+            ])
         )
 
-    return dbc.Row(cards, className="g-3")
+    return blocks
