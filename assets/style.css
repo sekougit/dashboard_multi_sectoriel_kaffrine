@@ -128,3 +128,23 @@ body {
     color: #475569;
     line-height: 1.3;
 }
+
+.kpi-context {
+    font-size: 11px;
+    color: #475569;
+    margin-top: 5px;
+}
+
+.kpi-prop {
+    font-size: 11px;
+    color: #16a34a;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.filter-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2e7d32; /* vert pro */
+    margin-bottom: 4px;
+}

@@ -1,86 +1,98 @@
 import dash
-from dash import html, dcc, Input, Output, callback, ctx, no_update, State
+from dash import html, dcc, Input, Output, callback, State, no_update
 import dash_bootstrap_components as dbc
 
 from utils.data_loader import get_all_sectors, load_sector_data
 
 dash.register_page(__name__, path="/secteurs")
 
-
-# =========================
-# COMPONENTS
-# =========================
-def dropdown_block(label, component):
-    return html.Div([
-        html.Div(label, className="filter-label"),
-        component
-    ], className="filter-block")
-
-
-def format_kpi_name(name):
-    return (
-        name.replace("_", " ")
-            .replace("indicateur", "ind.")
-            .replace("nombre", "nbr")
-            .replace("population", "pop")
-            .title()
-    )
-
-
-# =========================
-# LAYOUT
-# =========================
 layout = html.Div([
 
     html.H2(id="dynamic-title"),
+    html.Div(id="filters-summary", className="filters-summary mt-2"),
+# =========================
+# FILTERS
+# =========================
+dbc.Row([
 
-    html.Div([
-        dbc.Row([
+    dbc.Col([
+        html.Div("📊 Secteur", className="filter-title"),
+        dcc.Dropdown(
+            id="secteur-dd",
+            placeholder="Choisir un secteur",
+            clearable=False,
+            persistence=True,
+            persistence_type="local"
+        )
+    ], width=2),
 
-            dbc.Col(dropdown_block("📊 Secteur",
-                dcc.Dropdown(id="secteur-dd", clearable=False)
-            ), width=2),
+    dbc.Col([
+        html.Div("📅 Année", className="filter-title"),
+        dcc.Dropdown(
+            id="annee-dd",
+            placeholder="Toutes les années",
+            multi=True,
+            persistence=True,
+            persistence_type="local"
+        )
+    ], width=2),
 
-            dbc.Col(dropdown_block("📅 Année",
-                dcc.Dropdown(id="annee-dd", multi=True)
-            ), width=2),
+    dbc.Col([
+        html.Div("🌍 Région", className="filter-title"),
+        dcc.Dropdown(
+            id="region-dd",
+            placeholder="Toutes les régions",
+            multi=True,
+            persistence=True,
+            persistence_type="local"
+        )
+    ], width=2),
 
-            dbc.Col(dropdown_block("🌍 Région",
-                dcc.Dropdown(id="region-dd", multi=True)
-            ), width=2),
+    dbc.Col([
+        html.Div("🏙️ Département", className="filter-title"),
+        dcc.Dropdown(
+            id="departement-dd",
+            placeholder="Tous les départements",
+            multi=True,
+            persistence=True,
+            persistence_type="local"
+        )
+    ], width=2),
 
-            dbc.Col(dropdown_block("🏙️ Département",
-                dcc.Dropdown(id="departement-dd", multi=True)
-            ), width=2),
+    dbc.Col([
+        html.Div("📍 Commune", className="filter-title"),
+        dcc.Dropdown(
+            id="commune-dd",
+            placeholder="Toutes les communes",
+            multi=True,
+            persistence=True,
+            persistence_type="local"
+        )
+    ], width=2),
 
-            dbc.Col(dropdown_block("📍 Commune",
-                dcc.Dropdown(id="commune-dd", multi=True)
-            ), width=2),
+    dbc.Col([
+        html.Div("📈 Indicateurs", className="filter-title"),
+        dcc.Dropdown(
+            id="indicateur-dd",
+            placeholder="Choisir indicateurs",
+            multi=True,
+            persistence=True,
+            persistence_type="local"
+        )
+    ], width=2),
 
-            dbc.Col(dropdown_block("📈 Indicateurs",
-                dcc.Dropdown(id="indicateur-dd", multi=True)
-            ), width=2),
-
-        ])
-    ], className="filters-bar"),
-
-    html.Div(id="filters-summary", className="filters-summary mt-3"),
+], className="filters-bar"),
 
     html.Div(id="kpi-container")
 
 ])
 
-
-# =========================
-# LOAD SECTEURS
-# =========================
 @callback(
     Output("secteur-dd", "options"),
     Input("secteur-dd", "id")
 )
 def load_secteurs(_):
     return [{"label": s, "value": s} for s in get_all_sectors()]
-
 
 @callback(
     Output("dynamic-title", "children"),
@@ -93,9 +105,8 @@ def update_title(secteur):
 
     return f"📊 Analyse multi-sectorielle - {secteur}"
 
-# =========================
-# LOAD INDICATEURS
-# =========================
+
+
 @callback(
     Output("indicateur-dd", "options"),
     Input("secteur-dd", "value")
@@ -106,16 +117,13 @@ def load_indicateurs(secteur):
         return []
 
     df = load_sector_data(secteur)
+
     exclude = ["annee", "region", "departement", "commune", "secteur"]
 
-    cols = [c for c in df.columns if c not in exclude and df[c].dtype != "object"]
+    cols = [c for c in df.columns if c not in exclude]
 
     return [{"label": c, "value": c} for c in cols]
 
-
-# =========================
-# CASCADE FILTRES
-# =========================
 @callback(
     Output("annee-dd", "options"),
     Output("region-dd", "options"),
@@ -129,21 +137,26 @@ def load_indicateurs(secteur):
 def update_filters(secteur, regions, departements):
 
     if not secteur:
-        return [], [], [], []
+        return no_update, no_update, no_update, no_update
 
     df = load_sector_data(secteur)
 
+    # REGION
     regions_all = sorted(df["region"].dropna().unique())
 
     if regions:
         df = df[df["region"].isin(regions)]
 
+    # DEPARTEMENT
     deps_all = sorted(df["departement"].dropna().unique())
 
     if departements:
         df = df[df["departement"].isin(departements)]
 
+    # COMMUNE
     communes = sorted(df["commune"].dropna().unique())
+
+    # ANNEE
     annees = sorted(df["annee"].dropna().unique())
 
     return (
@@ -153,10 +166,53 @@ def update_filters(secteur, regions, departements):
         [{"label": i, "value": i} for i in communes],
     )
 
+@callback(
+    Output("filters-summary", "children"),
 
-# =========================
-# RESTORE + RESET
-# =========================
+    Input("annee-dd", "value"),
+    Input("region-dd", "value"),
+    Input("departement-dd", "value"),
+    Input("commune-dd", "value"),
+)
+def show_selected(annee, region, dep, com):
+
+    def format(label, value):
+        if not value:
+            return None
+
+        if isinstance(value, list):
+            value = ", ".join(map(str, value))
+
+        return html.Span(f"{label}: {value}", className="filter-badge")
+
+    return html.Div([
+        format("📅 Année", annee),
+        format("🌍 Région", region),
+        format("🏙️ Département", dep),
+        format("📍 Commune", com),
+    ], className="d-flex gap-2 flex-wrap")
+
+@callback(
+    Output("filters-store", "data"),
+
+    Input("secteur-dd", "value"),
+    Input("annee-dd", "value"),
+    Input("region-dd", "value"),
+    Input("departement-dd", "value"),
+    Input("commune-dd", "value"),
+    Input("indicateur-dd", "value"),
+)
+def save_filters(s, a, r, d, c, i):
+
+    return {
+        "secteur": s,
+        "annee": a,
+        "region": r,
+        "departement": d,
+        "commune": c,
+        "indicateur": i
+    }
+
 @callback(
     Output("secteur-dd", "value"),
     Output("annee-dd", "value"),
@@ -165,105 +221,22 @@ def update_filters(secteur, regions, departements):
     Output("commune-dd", "value"),
     Output("indicateur-dd", "value"),
 
-    Input("region-dd", "value"),
-    Input("departement-dd", "value"),
-
-    State("global-filters", "data"),
+    Input("filters-store", "data"),
 )
-def manage_filters(region, departement, data):
+def restore_filters(data):
 
-    trigger = ctx.triggered_id
+    if not data:
+        return None, None, None, None, None, None
 
-    if trigger == "region-dd":
-        return no_update, no_update, no_update, None, None, no_update
+    return (
+        data.get("secteur"),
+        data.get("annee"),
+        data.get("region"),
+        data.get("departement"),
+        data.get("commune"),
+        data.get("indicateur"),
+    )
 
-    if trigger == "departement-dd":
-        return no_update, no_update, no_update, no_update, None, no_update
-
-    if data:
-        return (
-            data.get("secteur"),
-            data.get("annee"),
-            data.get("region"),
-            data.get("departement"),
-            data.get("commune"),
-            data.get("indicateur"),
-        )
-
-    return no_update, no_update, no_update, no_update, no_update, no_update
-
-
-# =========================
-# SAVE FILTERS
-# =========================
-@callback(
-    Output("global-filters", "data"),
-
-    Input("secteur-dd", "value"),
-    Input("annee-dd", "value"),
-    Input("region-dd", "value"),
-    Input("departement-dd", "value"),
-    Input("commune-dd", "value"),
-    Input("indicateur-dd", "value"),
-
-    prevent_initial_call=True
-)
-def save_filters(secteur, annee, region, departement, commune, indicateur):
-
-    return {
-        "secteur": secteur,
-        "annee": annee,
-        "region": region,
-        "departement": departement,
-        "commune": commune,
-        "indicateur": indicateur
-    }
-
-
-# =========================
-# AFFICHAGE FILTRES
-# =========================
-@callback(
-    Output("filters-summary", "children"),
-
-    Input("secteur-dd", "value"),
-    Input("annee-dd", "value"),
-    Input("region-dd", "value"),
-    Input("departement-dd", "value"),
-    Input("commune-dd", "value"),
-    Input("indicateur-dd", "value"),
-)
-def display_filters(secteur, annees, regions, departements, communes, indicateurs):
-
-    def badge(label, values):
-        if not values:
-            return None
-
-        if isinstance(values, list):
-            val = ", ".join(map(str, values))
-        else:
-            val = str(values)
-
-        if len(val) > 40:
-            val = val[:40] + "..."
-
-        return html.Span(f"{label}: {val}", className="filter-badge")
-
-    badges = [
-        #badge("📊 Secteur", secteur),
-        badge("📅 Année", annees),
-        badge("🌍 Région", regions),
-        badge("🏙️ Département", departements),
-        badge("📍 Commune", communes),
-        #badge("📈 Indicateur", indicateurs),
-    ]
-
-    return html.Div([b for b in badges if b], className="d-flex flex-wrap gap-2")
-
-
-# =========================
-# KPI + COMPARAISON
-# =========================
 @callback(
     Output("kpi-container", "children"),
 
@@ -281,7 +254,9 @@ def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
 
     df = load_sector_data(secteur)
 
-    # 🔹 filtres
+    # =========================
+    # FILTRES
+    # =========================
     if annees:
         df = df[df["annee"].isin(annees)]
     if regions:
@@ -300,39 +275,37 @@ def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
         indicateurs = [c for c in df.columns if c not in exclude]
 
     # =========================
-    # 🔥 DÉTECTION MODE COMPARAISON
+    # 🔥 DÉTECTION COMPARAISON
     # =========================
     compare_dim = None
 
     if annees and len(annees) > 1:
         compare_dim = "annee"
+    elif regions and len(regions) > 1:
+        compare_dim = "region"
     elif departements and len(departements) > 1:
         compare_dim = "departement"
     elif communes and len(communes) > 1:
         compare_dim = "commune"
-    else:
-        compare_dim = None
 
     # =========================
-    # 🔥 MODE NORMAL
+    # MODE NORMAL
     # =========================
     if not compare_dim:
 
         cards = []
 
         for ind in indicateurs:
-            if ind not in df.columns:
-                continue
 
             total = df[ind].sum()
-            moyenne = df[ind].mean()
+            mean = df[ind].mean()
 
             cards.append(
                 dbc.Col(
                     html.Div([
-                        html.Div(format_kpi_name(ind), className="kpi-title"),
+                        html.Div(ind, className="kpi-title"),
                         html.Div(f"{total:,.0f}".replace(",", " "), className="kpi-value"),
-                        html.Div(f"Moy: {moyenne:,.2f}".replace(",", " "), className="kpi-sub")
+                        html.Div(f"Moy: {mean:,.2f}", className="kpi-sub"),
                     ], className="kpi-card"),
                     width=3
                 )
@@ -341,39 +314,33 @@ def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
         return dbc.Row(cards, className="g-3")
 
     # =========================
-    # 🔥 MODE COMPARAISON
+    # MODE COMPARAISON
     # =========================
-    groups = df.groupby(compare_dim)
-
     blocks = []
 
-    for name, group in groups:
+    for key, group in df.groupby(compare_dim):
 
-        row_cards = []
+        cards = []
 
         for ind in indicateurs:
-            if ind not in group.columns:
-                continue
 
             total = group[ind].sum()
-            moyenne = group[ind].mean()
+            mean = group[ind].mean()
 
-            row_cards.append(
+            cards.append(
                 dbc.Col(
                     html.Div([
-                        html.Div(format_kpi_name(ind), className="kpi-title"),
+                        html.Div(ind, className="kpi-title"),
                         html.Div(f"{total:,.0f}".replace(",", " "), className="kpi-value"),
-                        html.Div(f"Moy: {moyenne:,.2f}".replace(",", " "), className="kpi-sub")
+                        html.Div(f"Moy: {mean:,.2f}", className="kpi-sub"),
                     ], className="kpi-card"),
                     width=3
                 )
             )
 
-        blocks.append(
-            html.Div([
-                html.H5(f"📊 {compare_dim.upper()} : {name}", className="mt-4"),
-                dbc.Row(row_cards, className="g-3")
-            ])
-        )
+        blocks.append(html.Div([
+            html.H5(f"📊 {compare_dim.upper()} : {key}"),
+            dbc.Row(cards, className="g-3")
+        ]))
 
     return blocks

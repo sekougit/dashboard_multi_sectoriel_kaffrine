@@ -11,10 +11,13 @@ app = dash.Dash(
 
 server = app.server
 
+# =========================
 # SIDEBAR
+# =========================
 sidebar = html.Div([
     html.H3("📊 Dashboard", className="text-white"),
     html.Hr(),
+
     dbc.Nav([
         dbc.NavLink("🏠 Accueil", href="/", active="exact"),
         dbc.NavLink("📊 Secteurs", href="/secteurs", active="exact"),
@@ -23,12 +26,15 @@ sidebar = html.Div([
         dbc.NavLink("⚖️ Comparaison", href="/comparaison"),
         dbc.NavLink("📑 Statistiques", href="/statistiques"),
     ], vertical=True, pills=True)
+
 ], className="sidebar")
 
 content = html.Div(dash.page_container, className="content")
 
 app.layout = html.Div([
-    dcc.Store(id="global-filters", storage_type="session"),  # 🔥 persistence
+    # 🔥 STORE GLOBAL (PERSISTENCE)
+    dcc.Store(id="filters-store", storage_type="local"),
+
     sidebar,
     content
 ])
