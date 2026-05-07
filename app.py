@@ -13,29 +13,103 @@ server = app.server
 
 
 # =========================
-# SIDEBAR
+# SIDEBAR CONTENT
 # =========================
-sidebar = html.Div(
-    [
-        html.H3("📊 Dashboard", className="sidebar-title"),
-        html.Hr(),
+sidebar_content = html.Div([
 
-        dbc.Nav(
-            [
-                dbc.NavLink("🏠 Accueil", href="/", active="exact"),
-                dbc.NavLink("📊 Secteurs", href="/secteurs", active="exact"),
-                dbc.NavLink("📈 Graphiques", href="/graphiques", active="exact"),
-                dbc.NavLink("🗺️ Cartographie", href="/cartographie", active="exact"),
-                dbc.NavLink("⚖️ Comparaison", href="/comparaison", active="exact"),
-                dbc.NavLink("📑 Statistiques", href="/statistiques", active="exact"),
-            ],
-            vertical=True,
-            pills=True,
-            className="nav-links"
+    html.Div([
+        html.H3(
+            "📊 Dashboard",
+            className="sidebar-title"
         ),
+    ], className="sidebar-header"),
+
+    html.Hr(),
+
+    dbc.Nav([
+
+        dbc.NavLink(
+            [
+                html.Span("🏠"),
+                html.Span(" Accueil", className="link-text")
+            ],
+            href="/",
+            active="exact"
+        ),
+
+        dbc.NavLink(
+            [
+                html.Span("📊"),
+                html.Span(" Secteurs", className="link-text")
+            ],
+            href="/secteurs",
+            active="exact"
+        ),
+
+        dbc.NavLink(
+            [
+                html.Span("📈"),
+                html.Span(" Graphiques", className="link-text")
+            ],
+            href="/graphiques",
+            active="exact"
+        ),
+
+        dbc.NavLink(
+            [
+                html.Span("🗺️"),
+                html.Span(" Cartographie", className="link-text")
+            ],
+            href="/cartographie",
+            active="exact"
+        ),
+
+        dbc.NavLink(
+            [
+                html.Span("⚖️"),
+                html.Span(" Comparaison", className="link-text")
+            ],
+            href="/comparaison",
+            active="exact"
+        ),
+
+        dbc.NavLink(
+            [
+                html.Span("📑"),
+                html.Span(" Statistiques", className="link-text")
+            ],
+            href="/statistiques",
+            active="exact"
+        ),
+
     ],
+    vertical=True,
+    pills=True,
+    className="nav-links")
+
+])
+
+
+# =========================
+# DESKTOP SIDEBAR
+# =========================
+desktop_sidebar = html.Div(
+    sidebar_content,
     id="sidebar",
     className="sidebar expanded"
+)
+
+
+# =========================
+# MOBILE DRAWER
+# =========================
+mobile_drawer = dbc.Offcanvas(
+    sidebar_content,
+    id="mobile-drawer",
+    title="📊 Navigation",
+    is_open=False,
+    placement="start",
+    className="mobile-drawer"
 )
 
 
@@ -50,47 +124,97 @@ content = html.Div(
 
 
 # =========================
-# LAYOUT GLOBAL
+# APP LAYOUT
 # =========================
 app.layout = html.Div([
 
     # TOPBAR
     html.Div([
-        html.Button("☰", id="toggle-btn", n_clicks=0, className="toggle-btn"),
-        html.H4("Dashboard Analytique", className="app-title"),
+
+        html.Button(
+            "☰",
+            id="toggle-btn",
+            n_clicks=0,
+            className="toggle-btn"
+        ),
+
+        html.H4(
+            "Dashboard Analytique",
+            className="app-title"
+        )
+
     ], className="topbar"),
 
-    # STORE GLOBAL
-    dcc.Store(id="filters-store", storage_type="local"),
-    dcc.Store(id="graph-store", storage_type="local"),
+    # STORES
+    dcc.Store(
+        id="filters-store",
+        storage_type="local"
+    ),
+
+    dcc.Store(
+        id="graph-store",
+        storage_type="local"
+    ),
+
+    # MOBILE DRAWER
+    mobile_drawer,
 
     # MAIN
     html.Div([
-        sidebar,
+
+        desktop_sidebar,
+
         content
+
     ], className="main-container")
 
 ])
 
 
 # =========================
-# TOGGLE SIDEBAR
+# DESKTOP SIDEBAR TOGGLE
 # =========================
 @callback(
     Output("sidebar", "className"),
+    Output("page-content", "className"),
+
     Input("toggle-btn", "n_clicks"),
+
     State("sidebar", "className"),
+
+    prevent_initial_call=True
 )
 def toggle_sidebar(n, current):
 
-    if not n:
-        return "sidebar expanded"
-
     if "collapsed" in current:
-        return "sidebar expanded"
 
-    return "sidebar collapsed"
+        return (
+            "sidebar expanded",
+            "content expanded"
+        )
+
+    return (
+        "sidebar collapsed",
+        "content collapsed"
+    )
 
 
+# =========================
+# MOBILE DRAWER TOGGLE
+# =========================
+@callback(
+    Output("mobile-drawer", "is_open"),
+    Input("toggle-btn", "n_clicks"),
+    State("mobile-drawer", "is_open"),
+    prevent_initial_call=True
+)
+def toggle_drawer(n, is_open):
+
+    return not is_open
+
+
+# =========================
+# RUN
+# =========================
 if __name__ == "__main__":
     app.run(debug=True)
