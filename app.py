@@ -34,7 +34,7 @@ content = html.Div(dash.page_container, className="content")
 app.layout = html.Div([
     # 🔥 STORE GLOBAL (PERSISTENCE)
     dcc.Store(id="filters-store", storage_type="local"),
-
+    dcc.Store(id="graph-store", storage_type="local"),
     sidebar,
     content
 ])
