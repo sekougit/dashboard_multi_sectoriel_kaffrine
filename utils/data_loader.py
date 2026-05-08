@@ -95,6 +95,7 @@ BASE_URL = (
     "https://raw.githubusercontent.com/{USERNAME}/{REPOSITORY}/main/data"
 )
 
+#"https://raw.githubusercontent.com/sekougit/dashboard_multi_sectoriel_kaffrine/main/data"
 
 
 # =========================
@@ -138,7 +139,7 @@ def load_sector_data(sector):
 
     url = f"{BASE_URL}/{sector}.xlsx"
 
-    df = pd.read_excel(url)
+    df = pd.read_excel(url,engine="openpyxl")
 
     # NORMALISATION
     df.columns = (
