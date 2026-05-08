@@ -169,6 +169,7 @@
 ############### GOOGLE DRIVE #############################
 
 import pandas as pd
+from functools import lru_cache
 
 
 # =========================
@@ -199,6 +200,10 @@ def get_all_sectors():
 # =========================
 # LOAD DATA
 # =========================
+# =========================
+# CACHE MÉMOIRE
+# =========================
+@lru_cache(maxsize=32)
 def load_sector_data(sector):
 
     url = FILES[sector]
@@ -214,6 +219,10 @@ def load_sector_data(sector):
         .str.strip()
         .str.lower()
     )
+    df["annee"] = df["annee"].astype(str)
+    df["region"] = df["region"].astype("category")
+    df["departement"] = df["departement"].astype("category")
+    df["commune"] = df["commune"].astype("category")
 
     return df
 
