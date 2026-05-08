@@ -20,70 +20,10 @@
 #         return []
 #     return sorted(df[col].dropna().unique())
 
-# import pandas as pd
-# import os
-
-# DATA_PATH = "data"
-
-
-# # =========================
-# # LISTE DES SECTEURS
-# # =========================
-# def get_all_sectors():
-
-#     files = os.listdir(DATA_PATH)
-
-#     return [
-#         f.replace(".xlsx", "")
-#         for f in files
-#         if f.endswith(".xlsx")
-#     ]
-
-
-# # =========================
-# # LOAD DATA
-# # =========================
-# def load_sector_data(sector):
-
-#     path = os.path.join(
-#         DATA_PATH,
-#         f"{sector}.xlsx"
-#     )
-
-#     df = pd.read_excel(path)
-
-#     # NORMALISATION COLONNES
-#     df.columns = (
-#         df.columns
-#         .str.strip()
-#         .str.lower()
-#     )
-
-#     return df
-
-
-# # =========================
-# # VALEURS UNIQUES
-# # =========================
-# def get_unique_values(df, col):
-
-#     if col not in df.columns:
-#         return []
-
-#     return sorted(
-#         df[col]
-#         .dropna()
-#         .unique()
-#     )
-
 import pandas as pd
+import os
 
-# =========================
-# GITHUB RAW URL
-# =========================
-BASE_URL = (
-    "https://github.com/sekougit/dashboard_multi_sectoriel_kaffrine/tree/main/data"
-)
+DATA_PATH = "data"
 
 
 # =========================
@@ -91,33 +31,15 @@ BASE_URL = (
 # =========================
 def get_all_sectors():
 
-    fichiers = [
-'AGRICULTURE',
-'AQUACULTURE',
-'ASSAINISSEMENT',
-'COMMERCE_ARM',
-'CULTURE',
-'EAU',
-'EDUCATION_FORMATION',
-'ELEVAGE',
-'ENERGIE',
-'FAMILLE_AUTONOMISATION',
-'HYGIENE',
-'INDUSTRIE_ARTISANAT',
-'JEUNESSE',
-'MINES_GEOLOGIE',
-'PECHE',
-'PROTECTION_JUDICIAIRE_SOCIALE_AEMO',
-'SANTE',
-'SFD_BANQUES',
-'SPORTS',
-'TIC',
-'TOURISME',
-'TRANSPORTS',
-'VULNERABILITE_PROTECTION_SOCIAL',
+    files = os.listdir(DATA_PATH)
+
+    liste_secteurs = [
+        f.replace(".xlsx", "")
+        for f in files
+        if f.endswith(".xlsx")
     ]
 
-    return fichiers
+    return sorted(liste_secteurs)
 
 
 # =========================
@@ -125,11 +47,14 @@ def get_all_sectors():
 # =========================
 def load_sector_data(sector):
 
-    url = f"{BASE_URL}/{sector}.xlsx"
+    path = os.path.join(
+        DATA_PATH,
+        f"{sector}.xlsx"
+    )
 
-    df = pd.read_excel(url)
+    df = pd.read_excel(path)
 
-    # NORMALISATION
+    # NORMALISATION COLONNES
     df.columns = (
         df.columns
         .str.strip()
@@ -140,7 +65,7 @@ def load_sector_data(sector):
 
 
 # =========================
-# UNIQUE VALUES
+# VALEURS UNIQUES
 # =========================
 def get_unique_values(df, col):
 
@@ -152,3 +77,80 @@ def get_unique_values(df, col):
         .dropna()
         .unique()
     )
+
+# import pandas as pd
+
+# # =========================
+# # GITHUB RAW URL
+# # =========================
+# BASE_URL = (
+#     "https://github.com/sekougit/dashboard_multi_sectoriel_kaffrine/tree/main/data"
+# )
+
+
+# # =========================
+# # LISTE DES SECTEURS
+# # =========================
+# def get_all_sectors():
+
+#     fichiers = [
+# 'AGRICULTURE',
+# 'AQUACULTURE',
+# 'ASSAINISSEMENT',
+# 'COMMERCE_ARM',
+# 'CULTURE',
+# 'EAU',
+# 'EDUCATION_FORMATION',
+# 'ELEVAGE',
+# 'ENERGIE',
+# 'FAMILLE_AUTONOMISATION',
+# 'HYGIENE',
+# 'INDUSTRIE_ARTISANAT',
+# 'JEUNESSE',
+# 'MINES_GEOLOGIE',
+# 'PECHE',
+# 'PROTECTION_JUDICIAIRE_SOCIALE_AEMO',
+# 'SANTE',
+# 'SFD_BANQUES',
+# 'SPORTS',
+# 'TIC',
+# 'TOURISME',
+# 'TRANSPORTS',
+# 'VULNERABILITE_PROTECTION_SOCIAL',
+#     ]
+
+#     return fichiers
+
+
+# # =========================
+# # LOAD DATA
+# # =========================
+# def load_sector_data(sector):
+
+#     url = f"{BASE_URL}/{sector}.xlsx"
+
+#     df = pd.read_excel(url)
+
+#     # NORMALISATION
+#     df.columns = (
+#         df.columns
+#         .str.strip()
+#         .str.lower()
+#     )
+
+#     return df
+
+
+# # =========================
+# # UNIQUE VALUES
+# # =========================
+# def get_unique_values(df, col):
+
+#     if col not in df.columns:
+#         return []
+
+#     return sorted(
+#         df[col]
+#         .dropna()
+#         .unique()
+#     )
