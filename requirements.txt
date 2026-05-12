@@ -5,6 +5,3 @@ openpyxl
 flask-caching
 gunicorn
 plotly
-zipfile
-base64
-io

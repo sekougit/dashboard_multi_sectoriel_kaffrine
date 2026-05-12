@@ -482,10 +482,7 @@ def export_kpis(
     indicateurs
 ):
 
-    # =====================================================
-    # 🔥 IMPORTANT : BLOQUE AUTO-TRIGGER
-    # =====================================================
-    if not n_clicks or n_clicks < 1:
+    if not n_clicks:
         return dash.no_update
 
     if not secteur or not indicateurs:
@@ -511,30 +508,36 @@ def export_kpis(
     if communes:
         df = df[df["commune"].isin(communes)]
 
-    # =========================
-    # KPI AGREGATION
-    # =========================
-    dimension = "global"
+    if df.empty:
+        return dash.no_update
 
-    results = []
+    # =========================
+    # DIMENSION LOGIQUE
+    # =========================
+    if communes:
+        dim = "commune"
+    elif departements:
+        dim = "departement"
+    elif regions:
+        dim = "region"
+    else:
+        dim = "annee"
+
+    # =========================
+    # KPI AGGREGATION PROPRE
+    # =========================
+    final_df = pd.DataFrame()
 
     for ind in indicateurs:
 
         if ind not in df.columns:
             continue
 
-        grouped = df.groupby(
-            "region" if regions else
-            "departement" if departements else
-            "commune" if communes else
-            df.index
-        )[ind].sum().reset_index()
-
+        grouped = df.groupby(dim, as_index=False)[ind].sum()
+        grouped.rename(columns={ind: "valeur"}, inplace=True)
         grouped["indicateur"] = ind
 
-        results.append(grouped)
-
-    final_df = pd.concat(results, ignore_index=True)
+        final_df = pd.concat([final_df, grouped], ignore_index=True)
 
     # =========================
     # EXPORT EXCEL
@@ -548,5 +551,5 @@ def export_kpis(
 
     return dcc.send_bytes(
         output.getvalue(),
-        f"KPIs_{secteur}.xlsx"
+        f"KPIs_{secteur}_{annees}.xlsx"
     )
