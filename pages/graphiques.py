@@ -2,10 +2,23 @@ import dash
 from dash import html, dcc, Input, Output, callback, State
 import dash_bootstrap_components as dbc
 import plotly.express as px
+from dash.dependencies import ALL
+import pandas as pd
+import io
+import io
+import zipfile
+import base64
+from dash import ctx
 
-from utils.data_loader import load_sector_data, get_all_sectors
+from utils.data_loader import (
+    load_sector_data,
+    get_all_sectors
+)
 
-dash.register_page(__name__, path="/graphiques")
+dash.register_page(
+    __name__,
+    path="/graphiques"
+)
 
 
 # =========================================================
@@ -27,11 +40,23 @@ layout = html.Div([
         id="restore-done",
         data=False
     ),
+    # =====================================================
+    # DOWNLOAD
+    # =====================================================
+    dcc.Download(id="download-graph-excel"),
 
+    dcc.Download(id="download-all-excel"),
+    dcc.Download(id="download-all-images"),
+    # =====================================================
+    # FILTRES
+    # =====================================================
     dbc.Row([
 
         dbc.Col([
-            html.Div("📊 Secteur", className="filter-title"),
+            html.Div(
+                "📊 Secteur",
+                className="filter-title"
+            ),
 
             dcc.Dropdown(
                 id="graph-secteur",
@@ -39,10 +64,14 @@ layout = html.Div([
                 persistence=True,
                 persistence_type="local"
             )
+
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("📅 Année", className="filter-title"),
+            html.Div(
+                "📅 Année",
+                className="filter-title"
+            ),
 
             dcc.Dropdown(
                 id="graph-annee",
@@ -50,10 +79,14 @@ layout = html.Div([
                 persistence=True,
                 persistence_type="local"
             )
+
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("🌍 Région", className="filter-title"),
+            html.Div(
+                "🌍 Région",
+                className="filter-title"
+            ),
 
             dcc.Dropdown(
                 id="graph-region",
@@ -61,10 +94,14 @@ layout = html.Div([
                 persistence=True,
                 persistence_type="local"
             )
+
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("🏙️ Département", className="filter-title"),
+            html.Div(
+                "🏙️ Département",
+                className="filter-title"
+            ),
 
             dcc.Dropdown(
                 id="graph-departement",
@@ -72,10 +109,14 @@ layout = html.Div([
                 persistence=True,
                 persistence_type="local"
             )
+
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("📍 Commune", className="filter-title"),
+            html.Div(
+                "📍 Commune",
+                className="filter-title"
+            ),
 
             dcc.Dropdown(
                 id="graph-commune",
@@ -83,10 +124,14 @@ layout = html.Div([
                 persistence=True,
                 persistence_type="local"
             )
+
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("📈 Indicateur", className="filter-title"),
+            html.Div(
+                "📈 Indicateur",
+                className="filter-title"
+            ),
 
             dcc.Dropdown(
                 id="graph-indicateur",
@@ -94,11 +139,29 @@ layout = html.Div([
                 persistence=True,
                 persistence_type="local"
             )
+
         ], xs=12, sm=6, md=4, lg=2),
 
     ], className="filters-bar g-2"),
 
     html.Br(),
+
+    html.Div([
+
+    dbc.Button(
+        "📥 Télécharger Excel",
+        id="download-all-excel-btn",
+        color="success",
+        className="me-2"
+    ),
+
+    dbc.Button(
+        "🖼️ Télécharger Images",
+        id="download-all-images-btn",
+        color="primary"
+    ),
+
+], className="d-flex justify-content-end mb-3"),
 
     html.Div(id="graphs-container")
 
@@ -204,7 +267,9 @@ def update_dropdowns(
     )
 
     if departements:
-        df = df[df["departement"].isin(departements)]
+        df = df[
+            df["departement"].isin(departements)
+        ]
 
     communes = sorted(
         df["commune"].dropna().unique()
@@ -311,7 +376,7 @@ def restore_filters(
 
 
 # =========================================================
-# GRAPHIQUES
+# GENERATE GRAPHS
 # =========================================================
 @callback(
     Output("graphs-container", "children"),
@@ -333,8 +398,15 @@ def generate_graphs(
 ):
 
     if not secteur:
-        return "Sélectionnez un secteur"
 
+        return html.Div(
+            "📊 Sélectionnez un secteur",
+            className="text-center mt-4 fw-bold text-muted"
+        )
+
+    # =====================================================
+    # LOAD DATA
+    # =====================================================
     df = load_sector_data(secteur)
 
     # =====================================================
@@ -347,30 +419,32 @@ def generate_graphs(
         df = df[df["region"].isin(regions)]
 
     if departements:
-        df = df[df["departement"].isin(departements)]
+        df = df[
+            df["departement"].isin(departements)
+        ]
 
     if communes:
         df = df[df["commune"].isin(communes)]
 
+    # =====================================================
+    # DATA VIDE
+    # =====================================================
     if df.empty:
-        return "Aucune donnée"
+
+        return html.Div(
+            "❌ Aucune donnée disponible",
+            className="text-center mt-4 fw-bold text-danger"
+        )
 
     # =====================================================
     # INDICATEURS
     # =====================================================
-    exclude = [
-        "annee",
-        "region",
-        "departement",
-        "commune",
-        "secteur"
-    ]
-
     if not indicateurs:
-        indicateurs = [
-            c for c in df.columns
-            if c not in exclude
-        ]
+
+        return html.Div(
+            "📈 Sélectionnez un ou plusieurs indicateurs",
+            className="text-center mt-4 fw-bold text-muted"
+        )
 
     # =====================================================
     # DIMENSION
@@ -411,9 +485,6 @@ def generate_graphs(
         for i, a in enumerate(annees_uniques)
     }
 
-    # =====================================================
-    # STACK MODE
-    # =====================================================
     stack_mode = len(annees_uniques) > 1
 
     graphs = []
@@ -432,7 +503,7 @@ def generate_graphs(
         )[ind].sum()
 
         # =================================================
-        # PROPORTIONS
+        # POURCENTAGES
         # =================================================
         if stack_mode:
 
@@ -455,7 +526,7 @@ def generate_graphs(
         # =================================================
         grouped["label"] = grouped.apply(
             lambda r:
-            f"{int(r[ind])}\n({r['percent']:.1f}%)",
+            f"{int(r[ind]):,}\n({r['percent']:.1f}%)".replace(",", " "),
             axis=1
         )
 
@@ -481,7 +552,7 @@ def generate_graphs(
         )
 
         # =================================================
-        # STYLE BARRES
+        # STYLE
         # =================================================
         fig.update_traces(
 
@@ -496,7 +567,7 @@ def generate_graphs(
                 color="white"
             ),
 
-            marker_line_width=0.8
+            marker_line_width=0.6
         )
 
         # =================================================
@@ -508,34 +579,30 @@ def generate_graphs(
 
             autosize=True,
 
-            height=340,
+            height=330,
 
             title=dict(
-                text=f"{ind} - Répartition (%) par {dimension}",
                 x=0.5,
-                y=0.93,
-                font=dict(
-                    size=11
-                )
+                y=0.90,
+                xanchor="center",
+                font=dict(size=11)
             ),
 
             margin=dict(
                 l=15,
                 r=15,
-                t=90,
+                t=85,
                 b=15
             ),
 
-            # 🔥 LEGENDE EN HAUT A DROITE
             legend=dict(
                 orientation="h",
                 yanchor="bottom",
-                y=1.12,
+                y=1.03,
                 xanchor="right",
                 x=1,
                 font=dict(size=9),
-                title_text="",
-                bgcolor="rgba(255,255,255,0.7)"
+                title_text=""
             ),
 
             xaxis=dict(
@@ -549,41 +616,68 @@ def generate_graphs(
             )
         )
 
-        # =================================================
-        # STACK 100%
-        # =================================================
         if stack_mode:
-            fig.update_yaxes(range=[0, 100])
+
+            fig.update_yaxes(
+                range=[0, 100]
+            )
 
         # =================================================
-        # CARD
+        # CARD GRAPH
         # =================================================
         graphs.append(
 
             dbc.Col(
 
-                html.Div(
+                html.Div([
 
+                    # =================================
+                    # BOUTON EXCEL
+                    # =================================
+                    html.Div([
+
+                        dbc.Button(
+                            "📥 Excel",
+                            id={
+                                "type": "excel-btn",
+                                "index": ind
+                            },
+                            color="success",
+                            size="sm"
+                        )
+
+                    ],
+                    className="d-flex justify-content-end mb-2"),
+
+                    # =================================
+                    # GRAPH
+                    # =================================
                     dcc.Graph(
-                        figure=fig,
-                        config={
-                            "displayModeBar": False,
-                            "responsive": True
+                        id={
+                            "type": "graph",
+                            "index": ind
                         },
-                        style={
-                            "height": "340px"
+                        figure=fig,
+
+                        # 🔥 IMPORTANT
+                        config={
+                            "displayModeBar": True,
+                            "toImageButtonOptions": {
+                                "format": "png",
+                                "filename": ind
+                            }
                         }
-                    ),
+                    )
 
-                    style={
-                        "border": "1px solid #e5e7eb",
-                        "borderRadius": "14px",
-                        "padding": "8px",
-                        "background": "white",
-                        "boxShadow": "0 2px 6px rgba(0,0,0,0.05)"
-                    }
+                ],
 
-                ),
+                style={
+                    "border": "1px solid #e5e7eb",
+                    "borderRadius": "14px",
+                    "padding": "8px",
+                    "background": "white",
+                    "boxShadow": "0 2px 6px rgba(0,0,0,0.05)"
+                }),
 
                 xs=12,
                 sm=12,
@@ -596,4 +690,225 @@ def generate_graphs(
     return dbc.Row(
         graphs,
         className="g-3"
+    )
+
+
+@callback(
+    Output("download-graph-excel", "data"),
+
+    Input({
+        "type": "excel-btn",
+        "index": ALL
+    }, "n_clicks"),
+
+    State("graph-secteur", "value"),
+    State("graph-annee", "value"),
+    State("graph-region", "value"),
+    State("graph-departement", "value"),
+    State("graph-commune", "value"),
+
+    prevent_initial_call=True
+)
+def export_excel(
+    clicks,
+    secteur,
+    annees,
+    regions,
+    departements,
+    communes
+):
+
+    from dash import ctx
+
+    # =====================================================
+    # AUCUN CLIC
+    # =====================================================
+    if not clicks:
+        return dash.no_update
+
+    # =====================================================
+    # SI TOUS LES BOUTONS = NONE OU 0
+    # =====================================================
+    valid_click = any(
+        c is not None and c > 0
+        for c in clicks
+    )
+
+    if not valid_click:
+        return dash.no_update
+
+    # =====================================================
+    # BOUTON CLIQUÉ
+    # =====================================================
+    if not ctx.triggered_id:
+        return dash.no_update
+
+    indicateur = ctx.triggered_id["index"]
+
+@callback(
+    Output("download-all-excel", "data"),
+    Input("download-all-excel-btn", "n_clicks"),
+    State("graph-secteur", "value"),
+    State("graph-annee", "value"),
+    State("graph-region", "value"),
+    State("graph-departement", "value"),
+    State("graph-commune", "value"),
+    State("graph-indicateur", "value"),
+    prevent_initial_call=True
+)
+def download_all_excel(
+    n,
+    secteur,
+    annees,
+    regions,
+    departements,
+    communes,
+    indicateurs
+):
+
+    if not n:
+        return dash.no_update
+
+    import io
+    import zipfile
+
+    df = load_sector_data(secteur)
+
+    if annees:
+        df = df[df["annee"].isin(annees)]
+    if regions:
+        df = df[df["region"].isin(regions)]
+    if departements:
+        df = df[df["departement"].isin(departements)]
+    if communes:
+        df = df[df["commune"].isin(communes)]
+
+    if not indicateurs:
+        return dash.no_update
+
+    dimension = "departement"
+    if communes:
+        dimension = "commune"
+    elif departements:
+        dimension = "departement"
+    elif regions:
+        dimension = "region"
+
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+
+        for ind in indicateurs:
+
+            if ind not in df.columns:
+                continue
+
+            grouped = df.groupby(
+                [dimension, "annee"],
+                as_index=False
+            )[ind].sum()
+
+            output = io.BytesIO()
+
+            with pd.ExcelWriter(output, engine="openpyxl") as writer:
+                grouped.to_excel(writer, index=False, sheet_name="data")
+
+            zip_file.writestr(
+                f"{ind}.xlsx",
+                output.getvalue()
+            )
+
+    zip_buffer.seek(0)
+
+    return dcc.send_bytes(
+        zip_buffer.getvalue(),
+        "tous_graphes_excel.zip"
+    )
+
+
+@callback(
+    Output("download-all-images", "data"),
+    Input("download-all-images-btn", "n_clicks"),
+    State("graph-secteur", "value"),
+    State("graph-annee", "value"),
+    State("graph-region", "value"),
+    State("graph-departement", "value"),
+    State("graph-commune", "value"),
+    State("graph-indicateur", "value"),
+    prevent_initial_call=True
+)
+def download_all_images(
+    n,
+    secteur,
+    annees,
+    regions,
+    departements,
+    communes,
+    indicateurs
+):
+
+    if not n:
+        return dash.no_update
+
+    import io
+    import zipfile
+    import plotly.express as px
+    import plotly.io as pio
+
+    df = load_sector_data(secteur)
+
+    if annees:
+        df = df[df["annee"].isin(annees)]
+    if regions:
+        df = df[df["region"].isin(regions)]
+    if departements:
+        df = df[df["departement"].isin(departements)]
+    if communes:
+        df = df[df["commune"].isin(communes)]
+
+    if not indicateurs:
+        return dash.no_update
+
+    dimension = "departement"
+    if communes:
+        dimension = "commune"
+    elif departements:
+        dimension = "departement"
+    elif regions:
+        dimension = "region"
+
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+
+        for ind in indicateurs:
+
+            if ind not in df.columns:
+                continue
+
+            grouped = df.groupby(
+                [dimension, "annee"],
+                as_index=False
+            )[ind].sum()
+
+            fig = px.bar(
+                grouped,
+                x=dimension,
+                y=ind,
+                color="annee",
+                title=ind
+            )
+
+            img = pio.to_image(fig, format="png", scale=2)
+
+            zip_file.writestr(
+                f"{ind}.png",
+                img
+            )
+
+    zip_buffer.seek(0)
+
+    return dcc.send_bytes(
+        zip_buffer.getvalue(),
+        "tous_graphes_images.zip"
     )

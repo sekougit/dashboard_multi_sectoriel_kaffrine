@@ -83,6 +83,19 @@ dbc.Row([
 
 ], className="filters-bar"),
 
+    dcc.Download(id="download-kpi"),
+
+    html.Div([
+
+    dbc.Button(
+        "📥 Télécharger KPI sélectionnés",
+        id="download-kpi-btn",
+        color="dark",
+        className="mb-3"
+    ),
+
+], className="d-flex justify-content-end"),
+
     html.Div(id="kpi-container")
 
 ])
@@ -247,11 +260,28 @@ def restore_filters(data):
     Input("commune-dd", "value"),
     Input("indicateur-dd", "value"),
 )
-def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
+def update_kpis(
+    secteur,
+    annees,
+    regions,
+    departements,
+    communes,
+    indicateurs
+):
 
+    # =========================
+    # SECTEUR
+    # =========================
     if not secteur:
-        return "Sélectionnez un secteur"
 
+        return html.Div(
+            "📊 Sélectionnez un secteur",
+            className="text-center mt-4 fw-bold text-muted"
+        )
+
+    # =========================
+    # LOAD DATA
+    # =========================
     df = load_sector_data(secteur)
 
     # =========================
@@ -259,63 +289,109 @@ def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
     # =========================
     if annees:
         df = df[df["annee"].isin(annees)]
+
     if regions:
         df = df[df["region"].isin(regions)]
+
     if departements:
         df = df[df["departement"].isin(departements)]
+
     if communes:
         df = df[df["commune"].isin(communes)]
 
+    # =========================
+    # DATA VIDE
+    # =========================
     if df.empty:
-        return "Aucune donnée"
 
-    exclude = ["annee", "region", "departement", "commune", "secteur"]
-
-    if not indicateurs:
-        indicateurs = [c for c in df.columns if c not in exclude]
+        return html.Div(
+            "❌ Aucune donnée disponible",
+            className="text-center mt-4 fw-bold text-danger"
+        )
 
     # =========================
-    # 🔥 DÉTECTION COMPARAISON
+    # KPI UNIQUEMENT SI
+    # INDICATEUR SELECTIONNÉ
+    # =========================
+    if not indicateurs:
+
+        return html.Div(
+            "📈 Sélectionnez un ou plusieurs indicateurs",
+            className="text-center mt-4 fw-bold text-muted"
+        )
+
+    # =========================
+    # DETECTION COMPARAISON
     # =========================
     compare_dim = None
 
     if annees and len(annees) > 1:
         compare_dim = "annee"
+
     elif regions and len(regions) > 1:
         compare_dim = "region"
+
     elif departements and len(departements) > 1:
         compare_dim = "departement"
+
     elif communes and len(communes) > 1:
         compare_dim = "commune"
 
-    # =========================
+    # =====================================================
     # MODE NORMAL
-    # =========================
+    # =====================================================
     if not compare_dim:
 
         cards = []
 
         for ind in indicateurs:
 
+            if ind not in df.columns:
+                continue
+
             total = df[ind].sum()
             mean = df[ind].mean()
 
             cards.append(
+
                 dbc.Col(
+
                     html.Div([
-                        html.Div(ind, className="kpi-title"),
-                        html.Div(f"{total:,.0f}".replace(",", " "), className="kpi-value"),
-                        html.Div(f"Moy: {mean:,.2f}", className="kpi-sub"),
-                    ], className="kpi-card"),
-                    width=3
+
+                        html.Div(
+                            ind.upper(),
+                            className="kpi-title"
+                        ),
+
+                        html.Div(
+                            f"{total:,.0f}".replace(",", " "),
+                            className="kpi-value"
+                        ),
+
+                        html.Div(
+                            f"Moyenne : {mean:,.2f}",
+                            className="kpi-sub"
+                        ),
+
+                    ],
+                    className="kpi-card"),
+
+                    xs=12,
+                    sm=6,
+                    md=4,
+                    lg=3,
+                    xl=3
                 )
             )
 
-        return dbc.Row(cards, className="g-3")
+        return dbc.Row(
+            cards,
+            className="g-3 mt-2"
+        )
 
-    # =========================
+    # =====================================================
     # MODE COMPARAISON
-    # =========================
+    # =====================================================
     blocks = []
 
     for key, group in df.groupby(compare_dim):
@@ -324,23 +400,153 @@ def update_kpis(secteur, annees, regions, departements, communes, indicateurs):
 
         for ind in indicateurs:
 
+            if ind not in group.columns:
+                continue
+
             total = group[ind].sum()
             mean = group[ind].mean()
 
             cards.append(
+
                 dbc.Col(
+
                     html.Div([
-                        html.Div(ind, className="kpi-title"),
-                        html.Div(f"{total:,.0f}".replace(",", " "), className="kpi-value"),
-                        html.Div(f"Moy: {mean:,.2f}", className="kpi-sub"),
-                    ], className="kpi-card"),
-                    width=3
+
+                        html.Div(
+                            ind.upper(),
+                            className="kpi-title"
+                        ),
+
+                        html.Div(
+                            f"{total:,.0f}".replace(",", " "),
+                            className="kpi-value"
+                        ),
+
+                        html.Div(
+                            f"Moyenne : {mean:,.2f}",
+                            className="kpi-sub"
+                        ),
+
+                    ],
+                    className="kpi-card"),
+
+                    xs=12,
+                    sm=6,
+                    md=4,
+                    lg=3,
+                    xl=3
                 )
             )
 
-        blocks.append(html.Div([
-            html.H5(f"📊 {compare_dim.upper()} : {key}"),
-            dbc.Row(cards, className="g-3")
-        ]))
+        blocks.append(
+
+            html.Div([
+
+                html.H5(
+                    f"📊 {compare_dim.upper()} : {key}",
+                    className="mt-4 mb-3 fw-bold"
+                ),
+
+                dbc.Row(
+                    cards,
+                    className="g-3"
+                )
+
+            ])
+        )
 
     return blocks
+
+
+@callback(
+    Output("download-kpi", "data"),
+
+    Input("download-kpi-btn", "n_clicks"),
+
+    State("secteur-dd", "value"),
+    State("annee-dd", "value"),
+    State("region-dd", "value"),
+    State("departement-dd", "value"),
+    State("commune-dd", "value"),
+    State("indicateur-dd", "value"),
+
+    prevent_initial_call=True
+)
+def export_kpis(
+    n_clicks,
+    secteur,
+    annees,
+    regions,
+    departements,
+    communes,
+    indicateurs
+):
+
+    # =====================================================
+    # 🔥 IMPORTANT : BLOQUE AUTO-TRIGGER
+    # =====================================================
+    if not n_clicks or n_clicks < 1:
+        return dash.no_update
+
+    if not secteur or not indicateurs:
+        return dash.no_update
+
+    import io
+    import pandas as pd
+
+    df = load_sector_data(secteur)
+
+    # =========================
+    # FILTRES
+    # =========================
+    if annees:
+        df = df[df["annee"].isin(annees)]
+
+    if regions:
+        df = df[df["region"].isin(regions)]
+
+    if departements:
+        df = df[df["departement"].isin(departements)]
+
+    if communes:
+        df = df[df["commune"].isin(communes)]
+
+    # =========================
+    # KPI AGREGATION
+    # =========================
+    dimension = "global"
+
+    results = []
+
+    for ind in indicateurs:
+
+        if ind not in df.columns:
+            continue
+
+        grouped = df.groupby(
+            "region" if regions else
+            "departement" if departements else
+            "commune" if communes else
+            df.index
+        )[ind].sum().reset_index()
+
+        grouped["indicateur"] = ind
+
+        results.append(grouped)
+
+    final_df = pd.concat(results, ignore_index=True)
+
+    # =========================
+    # EXPORT EXCEL
+    # =========================
+    output = io.BytesIO()
+
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        final_df.to_excel(writer, index=False, sheet_name="KPIs")
+
+    output.seek(0)
+
+    return dcc.send_bytes(
+        output.getvalue(),
+        f"KPIs_{secteur}.xlsx"
+    )
