@@ -290,6 +290,23 @@ def is_rate_indicator(col):
 
     return any(k in col for k in RATE_KEYWORDS)
 
+def aggregate_indicator(df, indicateur, group_cols):
+
+    agg = "mean" if is_rate_indicator(indicateur) else "sum"
+
+    result = (
+        df.groupby(group_cols)
+          .agg(
+              **{
+                  indicateur: (indicateur, agg),
+                  "nb_na": (indicateur, lambda x: x.isna().sum())
+              }
+          )
+          .reset_index()
+    )
+
+    return result
+
 def compute_kpi(df, col):
     """
     Retourne :
