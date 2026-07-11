@@ -16,10 +16,6 @@ from utils.data_loader import (
     aggregate_indicator
 )
 
-from utils.data_loader import (
-    load_sector_data,
-    get_all_sectors
-)
 
 dash.register_page(
     __name__,
@@ -549,6 +545,12 @@ def generate_graphs(
         # =================================================
         # FIGURE
         # =================================================
+        # Titre selon le type d'indicateur
+        if is_rate_indicator(ind):
+            titre = "Moyenne"
+        else:
+            titre = "Somme"
+
         fig = px.bar(
 
             grouped,
@@ -565,9 +567,6 @@ def generate_graphs(
             text="label",
 
             titre = "Moyenne"
-
-            if not is_rate_indicator(ind):
-                titre = "Somme"
 
             title=f"{ind} ({titre})"
         )
@@ -733,32 +732,48 @@ def export_excel(
     communes
 ):
 
-    from dash import ctx
+    df = load_sector_data(secteur)
 
-    # =====================================================
-    # AUCUN CLIC
-    # =====================================================
-    if not clicks:
-        return dash.no_update
+    if annees:
+        df = df[df["annee"].isin(annees)]
 
-    # =====================================================
-    # SI TOUS LES BOUTONS = NONE OU 0
-    # =====================================================
-    valid_click = any(
-        c is not None and c > 0
-        for c in clicks
+    if regions:
+        df = df[df["region"].isin(regions)]
+
+    if departements:
+        df = df[df["departement"].isin(departements)]
+
+    if communes:
+        df = df[df["commune"].isin(communes)]
+
+    # Choix de la dimension
+    dimension = "departement"
+
+    if communes:
+        dimension = "commune"
+    elif departements:
+        dimension = "departement"
+    elif regions:
+        dimension = "region"
+
+    # Agrégation (somme ou moyenne selon le type d'indicateur)
+    grouped = aggregate_indicator(
+        df,
+        indicateur,
+        [dimension, "annee"]
     )
 
-    if not valid_click:
-        return dash.no_update
+    output = io.BytesIO()
 
-    # =====================================================
-    # BOUTON CLIQUÉ
-    # =====================================================
-    if not ctx.triggered_id:
-        return dash.no_update
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+        grouped.to_excel(writer, index=False, sheet_name="Données")
 
-    indicateur = ctx.triggered_id["index"]
+    output.seek(0)
+
+    return dcc.send_bytes(
+        output.getvalue(),
+        f"{indicateur}.xlsx"
+    )
 
 @callback(
     Output("download-all-excel", "data"),
