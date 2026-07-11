@@ -559,8 +559,20 @@ def generate_graphs(
             color=grouped["annee"].astype(str),
             color_discrete_map=color_map,
             barmode="stack" if stack_mode else "group",
-            text="label",
-            title=f"{ind} ({titre})"
+            text="label"
+        )
+
+        fig.update_layout(
+            title={
+                "text": f"<b>{ind} ({titre})</b>",
+                "x": 0.5,
+                "y": 0.90,
+                "xanchor": "center",
+                "font": {"size": 20}
+            }
+        )
+        grouped["valeur_fmt"] = grouped[ind].apply(
+            lambda x: f"{x:,.2f}".replace(",", " ") 
         )
 
         # =================================================
@@ -568,12 +580,13 @@ def generate_graphs(
         # =================================================
         fig.update_traces(
 
-            customdata=grouped[[ind, "nb_na"]],
+            customdata=grouped[["annee", "valeur_fmt", "nb_na"]],
 
             hovertemplate=
             "<b>%{x}</b><br>" +
-            "Valeur : %{customdata[0]:,.2f}<br>" +
-            "Vides : %{customdata[1]}<br>" +
+            "Année : %{customdata[0]}<br>" +
+            "Valeur : %{customdata[1]}<br>" +
+            "Vides : %{customdata[2]}<br>" +
             "Pourcentage : %{y:.2f}%<extra></extra>"
         )
         # =================================================
