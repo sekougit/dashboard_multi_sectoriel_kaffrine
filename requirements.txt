@@ -6,3 +6,5 @@ flask-caching
 gunicorn
 plotly
 python-dotenv
+uvicorn
+dotenv

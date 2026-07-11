@@ -573,7 +573,7 @@ def generate_graphs(
             hovertemplate=
             "<b>%{x}</b><br>" +
             "Valeur : %{customdata[0]:,.2f}<br>" +
-            "NA : %{customdata[1]}<br>" +
+            "Vides : %{customdata[1]}<br>" +
             "Pourcentage : %{y:.2f}%<extra></extra>"
         )
         # =================================================
@@ -702,10 +702,13 @@ def generate_graphs(
 @callback(
     Output("download-graph-excel", "data"),
 
-    Input({
-        "type": "excel-btn",
-        "index": ALL
-    }, "n_clicks"),
+    Input(
+        {
+            "type": "excel-btn",
+            "index": ALL
+        },
+        "n_clicks"
+    ),
 
     State("graph-secteur", "value"),
     State("graph-annee", "value"),
@@ -724,6 +727,17 @@ def export_excel(
     communes
 ):
 
+    # Aucun clic
+    if not clicks or not any(clicks):
+        return dash.no_update
+
+    # Identifier le bouton cliqué
+    if not ctx.triggered_id:
+        return dash.no_update
+
+    indicateur = ctx.triggered_id["index"]
+
+    # Chargement des données
     df = load_sector_data(secteur)
 
     if annees:
@@ -748,7 +762,7 @@ def export_excel(
     elif regions:
         dimension = "region"
 
-    # Agrégation (somme ou moyenne selon le type d'indicateur)
+    # Agrégation
     grouped = aggregate_indicator(
         df,
         indicateur,
@@ -758,7 +772,11 @@ def export_excel(
     output = io.BytesIO()
 
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        grouped.to_excel(writer, index=False, sheet_name="Données")
+        grouped.to_excel(
+            writer,
+            index=False,
+            sheet_name="Données"
+        )
 
     output.seek(0)
 

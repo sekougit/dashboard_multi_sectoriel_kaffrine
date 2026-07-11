@@ -22,7 +22,7 @@ from utils.data_loader import (
     count_missing
 )
 
-from utils.data_loader import get_all_sectors, load_sector_data
+
 
 dash.register_page(__name__, path="/secteurs")
 
@@ -374,7 +374,7 @@ def update_kpis(
                         ),
 
                         html.Div(
-                            f"Moyenne : {moyenne:.2f}"
+                            f"Moyenne : {moyenne:,.2f}".replace(",", " ")
                             if typ == "brut"
                             else f"Moyenne : {moyenne:.2f} %",
                             className="kpi-sub"
@@ -386,7 +386,7 @@ def update_kpis(
                         ),
 
                         html.Div(
-                            f"NA : {nb_nan}",
+                            f"Vides : {nb_nan}",
                             className="kpi-context"
                         )
 
@@ -438,7 +438,7 @@ def update_kpis(
                         ),
 
                         html.Div(
-                            f"Moyenne : {moyenne:.2f}"
+                            f"Moyenne : {moyenne:,.2f}".replace(",", " ")
                             if typ == "brut"
                             else f"Moyenne : {moyenne:.2f} %",
                             className="kpi-sub"
@@ -450,7 +450,7 @@ def update_kpis(
                         ),
 
                         html.Div(
-                            f"NA : {nb_nan}",
+                            f"Vides : {nb_nan}",
                             className="kpi-context"
                         )
 
