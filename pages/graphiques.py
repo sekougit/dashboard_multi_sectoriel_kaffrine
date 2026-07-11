@@ -546,28 +546,20 @@ def generate_graphs(
         # FIGURE
         # =================================================
         # Titre selon le type d'indicateur
+        # Déterminer le type d'agrégation
         if is_rate_indicator(ind):
             titre = "Moyenne"
         else:
             titre = "Somme"
 
         fig = px.bar(
-
             grouped,
-
             x=dimension,
             y="percent",
-
             color=grouped["annee"].astype(str),
-
             color_discrete_map=color_map,
-
             barmode="stack" if stack_mode else "group",
-
             text="label",
-
-            titre = "Moyenne"
-
             title=f"{ind} ({titre})"
         )
 
