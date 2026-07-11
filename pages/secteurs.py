@@ -1,6 +1,26 @@
+import io
 import dash
-from dash import html, dcc, Input, Output, callback, State, no_update
+import pandas as pd
+
+from dash import (
+    html,
+    dcc,
+    Input,
+    Output,
+    State,
+    callback,
+    no_update
+)
+
 import dash_bootstrap_components as dbc
+
+from utils.data_loader import (
+    get_all_sectors,
+    load_sector_data,
+    compute_kpi,
+    format_value,
+    count_missing
+)
 
 from utils.data_loader import get_all_sectors, load_sector_data
 
@@ -252,7 +272,6 @@ def restore_filters(data):
 
 @callback(
     Output("kpi-container", "children"),
-
     Input("secteur-dd", "value"),
     Input("annee-dd", "value"),
     Input("region-dd", "value"),
@@ -273,20 +292,16 @@ def update_kpis(
     # SECTEUR
     # =========================
     if not secteur:
-
         return html.Div(
             "📊 Sélectionnez un secteur",
             className="text-center mt-4 fw-bold text-muted"
         )
 
     # =========================
-    # LOAD DATA
+    # DONNEES
     # =========================
     df = load_sector_data(secteur)
 
-    # =========================
-    # FILTRES
-    # =========================
     if annees:
         df = df[df["annee"].isin(annees)]
 
@@ -299,29 +314,20 @@ def update_kpis(
     if communes:
         df = df[df["commune"].isin(communes)]
 
-    # =========================
-    # DATA VIDE
-    # =========================
     if df.empty:
-
         return html.Div(
             "❌ Aucune donnée disponible",
             className="text-center mt-4 fw-bold text-danger"
         )
 
-    # =========================
-    # KPI UNIQUEMENT SI
-    # INDICATEUR SELECTIONNÉ
-    # =========================
     if not indicateurs:
-
         return html.Div(
             "📈 Sélectionnez un ou plusieurs indicateurs",
             className="text-center mt-4 fw-bold text-muted"
         )
 
     # =========================
-    # DETECTION COMPARAISON
+    # DIMENSION DE COMPARAISON
     # =========================
     compare_dim = None
 
@@ -340,7 +346,7 @@ def update_kpis(
     # =====================================================
     # MODE NORMAL
     # =====================================================
-    if not compare_dim:
+    if compare_dim is None:
 
         cards = []
 
@@ -349,8 +355,7 @@ def update_kpis(
             if ind not in df.columns:
                 continue
 
-            total = df[ind].sum()
-            mean = df[ind].mean()
+            valeur, moyenne, nb_nan, typ = compute_kpi(df, ind)
 
             cards.append(
 
@@ -364,14 +369,26 @@ def update_kpis(
                         ),
 
                         html.Div(
-                            f"{total:,.0f}".replace(",", " "),
+                            format_value(valeur, typ),
                             className="kpi-value"
                         ),
 
                         html.Div(
-                            f"Moyenne : {mean:,.2f}",
+                            f"Moyenne : {moyenne:.2f}"
+                            if typ == "brut"
+                            else f"Moyenne : {moyenne:.2f} %",
                             className="kpi-sub"
                         ),
+
+                        html.Div(
+                            f"Type : {'Valeur brute' if typ=='brut' else 'Taux / Ratio'}",
+                            className="kpi-context"
+                        ),
+
+                        html.Div(
+                            f"NA : {nb_nan}",
+                            className="kpi-context"
+                        )
 
                     ],
                     className="kpi-card"),
@@ -381,13 +398,12 @@ def update_kpis(
                     md=4,
                     lg=3,
                     xl=3
+
                 )
+
             )
 
-        return dbc.Row(
-            cards,
-            className="g-3 mt-2"
-        )
+        return dbc.Row(cards, className="g-3 mt-2")
 
     # =====================================================
     # MODE COMPARAISON
@@ -403,8 +419,7 @@ def update_kpis(
             if ind not in group.columns:
                 continue
 
-            total = group[ind].sum()
-            mean = group[ind].mean()
+            valeur, moyenne, nb_nan, typ = compute_kpi(group, ind)
 
             cards.append(
 
@@ -418,14 +433,26 @@ def update_kpis(
                         ),
 
                         html.Div(
-                            f"{total:,.0f}".replace(",", " "),
+                            format_value(valeur, typ),
                             className="kpi-value"
                         ),
 
                         html.Div(
-                            f"Moyenne : {mean:,.2f}",
+                            f"Moyenne : {moyenne:.2f}"
+                            if typ == "brut"
+                            else f"Moyenne : {moyenne:.2f} %",
                             className="kpi-sub"
                         ),
+
+                        html.Div(
+                            f"Type : {'Valeur brute' if typ=='brut' else 'Taux / Ratio'}",
+                            className="kpi-context"
+                        ),
+
+                        html.Div(
+                            f"NA : {nb_nan}",
+                            className="kpi-context"
+                        )
 
                     ],
                     className="kpi-card"),
@@ -435,7 +462,9 @@ def update_kpis(
                     md=4,
                     lg=3,
                     xl=3
+
                 )
+
             )
 
         blocks.append(
@@ -447,12 +476,10 @@ def update_kpis(
                     className="mt-4 mb-3 fw-bold"
                 ),
 
-                dbc.Row(
-                    cards,
-                    className="g-3"
-                )
+                dbc.Row(cards, className="g-3")
 
             ])
+
         )
 
     return blocks
@@ -491,11 +518,16 @@ def export_kpis(
     import io
     import pandas as pd
 
-    df = load_sector_data(secteur)
+    from utils.data_loader import (
+        load_sector_data,
+        get_indicator_type
+    )
 
-    # =========================
+    df = load_sector_data(secteur).copy()
+
+    # ==========================
     # FILTRES
-    # =========================
+    # ==========================
     if annees:
         df = df[df["annee"].isin(annees)]
 
@@ -511,45 +543,116 @@ def export_kpis(
     if df.empty:
         return dash.no_update
 
-    # =========================
-    # DIMENSION LOGIQUE
-    # =========================
+    # ==========================
+    # DIMENSION
+    # ==========================
     if communes:
-        dim = "commune"
+        dimension = "commune"
     elif departements:
-        dim = "departement"
+        dimension = "departement"
     elif regions:
-        dim = "region"
+        dimension = "region"
+    elif annees and len(annees) > 1:
+        dimension = "annee"
     else:
-        dim = "annee"
+        dimension = None
 
-    # =========================
-    # KPI AGGREGATION PROPRE
-    # =========================
-    final_df = pd.DataFrame()
+    resultats = []
 
+    # ==========================
+    # CALCUL KPI
+    # ==========================
     for ind in indicateurs:
 
         if ind not in df.columns:
             continue
 
-        grouped = df.groupby(dim, as_index=False)[ind].sum()
-        grouped.rename(columns={ind: "valeur"}, inplace=True)
-        grouped["indicateur"] = ind
+        typ = get_indicator_type(ind)
 
-        final_df = pd.concat([final_df, grouped], ignore_index=True)
+        # -----------------------
+        # PAS DE COMPARAISON
+        # -----------------------
+        if dimension is None:
 
-    # =========================
+            serie = df[ind]
+
+            nb_nan = serie.isna().sum()
+
+            nb_valeurs = serie.notna().sum()
+
+            if typ == "taux":
+                valeur = serie.mean(skipna=True)
+            else:
+                valeur = serie.sum(skipna=True)
+
+            resultats.append({
+
+                "indicateur": ind,
+                "type": typ,
+                "dimension": "Global",
+                "modalite": "Tous",
+
+                "valeur": valeur,
+
+                "nb_valeurs": nb_valeurs,
+                "nb_nan": nb_nan
+
+            })
+
+        # -----------------------
+        # COMPARAISON
+        # -----------------------
+        else:
+
+            for modalite, groupe in df.groupby(dimension):
+
+                serie = groupe[ind]
+
+                nb_nan = serie.isna().sum()
+
+                nb_valeurs = serie.notna().sum()
+
+                if typ == "taux":
+                    valeur = serie.mean(skipna=True)
+                else:
+                    valeur = serie.sum(skipna=True)
+
+                resultats.append({
+
+                    "indicateur": ind,
+                    "type": typ,
+
+                    "dimension": dimension,
+                    "modalite": modalite,
+
+                    "valeur": valeur,
+
+                    "nb_valeurs": nb_valeurs,
+                    "nb_nan": nb_nan
+
+                })
+
+    final_df = pd.DataFrame(resultats)
+
+    # ==========================
     # EXPORT EXCEL
-    # =========================
+    # ==========================
     output = io.BytesIO()
 
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        final_df.to_excel(writer, index=False, sheet_name="KPIs")
+    with pd.ExcelWriter(
+        output,
+        engine="openpyxl"
+    ) as writer:
+
+        final_df.to_excel(
+            writer,
+            sheet_name="KPIs",
+            index=False
+        )
 
     output.seek(0)
 
     return dcc.send_bytes(
         output.getvalue(),
-        f"KPIs_{secteur}_{annees}.xlsx"
+        f"KPIs_{secteur}.xlsx"
     )

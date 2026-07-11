@@ -180,29 +180,36 @@ load_dotenv()
 # FICHIERS
 # =========================
 FILES = {
-'AGRICULTURE' : os.getenv('AGRICULTURE_URL'),
-'AQUACULTURE' : os.getenv('AQUACULTURE_URL'),
-'ASSAINISSEMENT' : os.getenv('ASSAINISSEMENT_URL'),
-'COMMERCE_ARM' : os.getenv('COMMERCE_ARM_URL'),
-'CULTURE' : os.getenv('CULTURE_URL'),
-'EAU' : os.getenv('EAU_URL'),
-'EDUCATION_FORMATION' : os.getenv('EDUCATION_FORMATION_URL'),
-'ELEVAGE' : os.getenv('ELEVAGE_URL'),
-'ENERGIE' : os.getenv('ENERGIE_URL'),
-'FAMILLE_AUTONOMISATION' : os.getenv('FAMILLE_AUTONOMISATION_URL'),
-'HYGIENE' : os.getenv('HYGIENE_URL'),
-'INDUSTRIE_ARTISANAT' : os.getenv('INDUSTRIE_ARTISANAT_URL'),
-'JEUNESSE' : os.getenv('JEUNESSE_URL'),
-'MINES_GEOLOGIE' : os.getenv('MINES_GEOLOGIE_URL'),
-'PECHE' : os.getenv('PECHE_URL'),
-'PROTECTION_JUDICIAIRE_SOCIALE_AEMO' : os.getenv('PROTECTION_JUDICIAIRE_SOCIALE_AEMO_URL'),
-'SANTE' : os.getenv('SANTE_URL'),
-'SFD_BANQUES' : os.getenv('SFD_BANQUES_URL'),
-'SPORTS' : os.getenv('SPORTS_URL'),
-'TIC' : os.getenv('TIC_URL'),
-'TOURISME' : os.getenv('TOURISME_URL'),
-'TRANSPORTS' : os.getenv('TRANSPORTS_URL'),
-'VULNERABILITE_PROTECTION_SOCIAL' : os.getenv('VULNERABILITE_PROTECTION_SOCIAL_URL')
+'ELEVAGE': os.getenv('ELEVAGE_URL'),
+'HYGIENE': os.getenv('HYGIENE_URL'),
+'ASSAINISSEMENT': os.getenv('ASSAINISSEMENT_URL'),
+'SECONDAIRE': os.getenv('SECONDAIRE_URL'),
+'EAU': os.getenv('EAU_URL'),
+'JEUNESSE': os.getenv('JEUNESSE_URL'),
+'ENERGIE': os.getenv('ENERGIE_URL'),
+'DAARA': os.getenv('DAARA_URL'),
+'VULNERABILITE_PROTECTION_SOCIALE': os.getenv('VULNERABILITE_PROTECTION_SOCIALE_URL'),
+'MOYEN': os.getenv('MOYEN_URL'),
+'TRANSPORTS': os.getenv('TRANSPORTS_URL'),
+'COMMERCE_ARM': os.getenv('COMMERCE_ARM_URL'),
+'CENTRE_FORMATION': os.getenv('CENTRE_FORMATION_URL'),
+'SFD_BANQUES': os.getenv('SFD_BANQUES_URL'),
+'FAMILLE_AUTONOMISATION': os.getenv('FAMILLE_AUTONOMISATION_URL'),
+'SPORTS': os.getenv('SPORTS_URL'),
+'GOUVERNANCE_TERRITORIALE': os.getenv('GOUVERNANCE_TERRITORIALE_URL'),
+'AQUACULTURE': os.getenv('AQUACULTURE_URL'),
+'TIC': os.getenv('TIC_URL'),
+'PECHE': os.getenv('PECHE_URL'),
+'TOURISME': os.getenv('TOURISME_URL'),
+'ELEMENTAIRE': os.getenv('ELEMENTAIRE_URL'),
+'MINES_GEOLOGIE': os.getenv('MINES_GEOLOGIE_URL'),
+'GESTION_FONCIERE': os.getenv('GESTION_FONCIERE_URL'),
+'SANTE': os.getenv('SANTE_URL'),
+'INDUSTRIE_ARTISANAT': os.getenv('INDUSTRIE_ARTISANAT_URL'),
+'PROTECTION_JUDICIAIRE_SOCIALE_AEMO': os.getenv('PROTECTION_JUDICIAIRE_SOCIALE_AEMO_URL'),
+'CULTURE': os.getenv('CULTURE_URL'),
+'AGRICULTURE': os.getenv('AGRICULTURE_URL'),
+'PRESCOLAIRE': os.getenv('PRESCOLAIRE_URL'),
 }
 
 
@@ -257,3 +264,78 @@ def get_unique_values(df, col):
         .dropna()
         .unique()
     )
+
+
+# =========================
+# Détection automatique des indicateurs de taux
+# =========================
+RATE_KEYWORDS = [
+    "taux",
+    "ratio",
+    "%",
+    "proportion",
+    "part",
+    "indice",
+    "moyenne",
+    "pourcentage"
+]
+
+
+def is_rate_indicator(col):
+    """
+    Retourne True si l'indicateur est un taux,
+    False si c'est une valeur brute.
+    """
+    col = col.lower()
+
+    return any(k in col for k in RATE_KEYWORDS)
+
+def compute_kpi(df, col):
+    """
+    Retourne :
+        valeur,
+        moyenne,
+        nb_nan,
+        type_indicateur
+    """
+
+    s = pd.to_numeric(df[col], errors="coerce")
+
+    nb_nan = s.isna().sum()
+
+    if is_rate_indicator(col):
+
+        valeur = s.mean(skipna=True)
+        typ = "taux"
+
+    else:
+
+        valeur = s.sum(skipna=True)
+        typ = "brut"
+
+    moyenne = s.mean(skipna=True)
+
+    return valeur, moyenne, nb_nan, typ
+
+def format_value(value, typ):
+    """
+    Formatage uniforme des KPI.
+    """
+
+    if pd.isna(value):
+        return "NA"
+
+    if typ == "taux":
+        return f"{value:,.2f} %".replace(",", " ")
+
+    return f"{value:,.0f}".replace(",", " ")
+
+def count_missing(df, col):
+    """
+    Nombre de valeurs manquantes.
+    """
+
+    return pd.to_numeric(
+        df[col],
+        errors="coerce"
+    ).isna().sum()

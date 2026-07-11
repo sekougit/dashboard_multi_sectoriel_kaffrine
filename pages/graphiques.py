@@ -9,6 +9,12 @@ import io
 import zipfile
 import base64
 from dash import ctx
+from utils.data_loader import (
+    load_sector_data,
+    get_all_sectors,
+    is_rate_indicator,
+    aggregate_indicator
+)
 
 from utils.data_loader import (
     load_sector_data,
@@ -497,10 +503,11 @@ def generate_graphs(
         if ind not in df.columns:
             continue
 
-        grouped = df.groupby(
-            [dimension, "annee"],
-            as_index=False
-        )[ind].sum()
+        grouped = aggregate_indicator(
+            df,
+            ind,
+            [dimension, "annee"]
+        )
 
         # =================================================
         # POURCENTAGES
@@ -524,12 +531,21 @@ def generate_graphs(
         # =================================================
         # LABELS
         # =================================================
-        grouped["label"] = grouped.apply(
-            lambda r:
-            f"{int(r[ind]):,}\n({r['percent']:.1f}%)".replace(",", " "),
-            axis=1
-        )
+        if is_rate_indicator(ind):
 
+            grouped["label"] = grouped.apply(
+                lambda r:
+                f"{r[ind]:.2f}%\n({r['percent']:.1f}%)",
+                axis=1
+            )
+
+        else:
+
+            grouped["label"] = grouped.apply(
+                lambda r:
+                f"{int(r[ind]):,}\n({r['percent']:.1f}%)".replace(",", " "),
+                axis=1
+            )
         # =================================================
         # FIGURE
         # =================================================
@@ -548,7 +564,12 @@ def generate_graphs(
 
             text="label",
 
-            title=f"{ind} - Répartition (%) par {dimension}"
+            titre = "Moyenne"
+
+            if not is_rate_indicator(ind):
+                titre = "Somme"
+
+            title=f"{ind} ({titre})"
         )
 
         # =================================================
@@ -556,20 +577,14 @@ def generate_graphs(
         # =================================================
         fig.update_traces(
 
-            textposition="inside",
+            customdata=grouped[[ind, "nb_na"]],
 
-            textangle=-90,
-
-            insidetextanchor="middle",
-
-            textfont=dict(
-                size=8,
-                color="white"
-            ),
-
-            marker_line_width=0.6
+            hovertemplate=
+            "<b>%{x}</b><br>" +
+            "Valeur : %{customdata[0]:,.2f}<br>" +
+            "NA : %{customdata[1]}<br>" +
+            "Pourcentage : %{y:.2f}%<extra></extra>"
         )
-
         # =================================================
         # LAYOUT
         # =================================================
@@ -803,10 +818,11 @@ def download_all_excel(
             if ind not in df.columns:
                 continue
 
-            grouped = df.groupby(
-                [dimension, "annee"],
-                as_index=False
-            )[ind].sum()
+            grouped = aggregate_indicator(
+                df,
+                ind,
+                [dimension, "annee"]
+            )
 
             output = io.BytesIO()
 
@@ -886,10 +902,11 @@ def download_all_images(
             if ind not in df.columns:
                 continue
 
-            grouped = df.groupby(
-                [dimension, "annee"],
-                as_index=False
-            )[ind].sum()
+            grouped = aggregate_indicator(
+                df,
+                ind,
+                [dimension, "annee"]
+            )
 
             fig = px.bar(
                 grouped,
