@@ -1,6 +1,11 @@
 import dash
 from dash import html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
+from auth import init_auth
+from login import login_bp
+
+from flask import request, redirect
+from flask_login import current_user
 
 app = dash.Dash(
     __name__,
@@ -9,7 +14,56 @@ app = dash.Dash(
     suppress_callback_exceptions=True
 )
 
+
+
 server = app.server
+
+init_auth(server)
+
+server.register_blueprint(login_bp)
+
+# ==========================================================
+# PROTECTION DES PAGES
+# ==========================================================
+@server.before_request
+def protect_dash():
+
+    path = request.path
+
+    # ==========================
+    # Routes publiques
+    # ==========================
+    public_routes = [
+        "/login",
+        "/logout",
+        "/favicon.ico"
+    ]
+
+    if path in public_routes:
+        return
+
+    # ==========================
+    # Ressources Dash
+    # ==========================
+    if (
+        path.startswith("/assets/")
+        or path.startswith("/_dash-")
+        or path.startswith("/_favicon")
+        or path.startswith("/_reload-hash")
+        or path.startswith("/_alive")
+    ):
+        return
+
+    # ==========================
+    # Utilisateur connecté ?
+    # ==========================
+    if current_user.is_authenticated:
+        return
+
+    # ==========================
+    # Sinon -> Login
+    # ==========================
+    return redirect("/login")
 
 
 # =========================
@@ -29,55 +83,37 @@ sidebar_content = html.Div([
     dbc.Nav([
 
         dbc.NavLink(
-            [
-                html.Span("🏠"),
-                html.Span(" Accueil", className="link-text")
-            ],
+            [html.Span("🏠"), html.Span(" Accueil", className="link-text")],
             href="/",
             active="exact"
         ),
 
         dbc.NavLink(
-            [
-                html.Span("📊"),
-                html.Span(" Secteurs", className="link-text")
-            ],
+            [html.Span("📊"), html.Span(" Secteurs", className="link-text")],
             href="/secteurs",
             active="exact"
         ),
 
         dbc.NavLink(
-            [
-                html.Span("📈"),
-                html.Span(" Graphiques", className="link-text")
-            ],
+            [html.Span("📈"), html.Span(" Graphiques", className="link-text")],
             href="/graphiques",
             active="exact"
         ),
 
         dbc.NavLink(
-            [
-                html.Span("🗺️"),
-                html.Span(" Cartographie", className="link-text")
-            ],
+            [html.Span("🗺️"), html.Span(" Cartographie", className="link-text")],
             href="/cartographie",
             active="exact"
         ),
 
         dbc.NavLink(
-            [
-                html.Span("⚖️"),
-                html.Span(" Comparaison", className="link-text")
-            ],
+            [html.Span("⚖️"), html.Span(" Comparaison", className="link-text")],
             href="/comparaison",
             active="exact"
         ),
 
         dbc.NavLink(
-            [
-                html.Span("📑"),
-                html.Span(" Statistiques", className="link-text")
-            ],
+            [html.Span("📑"), html.Span(" Statistiques", className="link-text")],
             href="/statistiques",
             active="exact"
         ),
@@ -85,10 +121,35 @@ sidebar_content = html.Div([
     ],
     vertical=True,
     pills=True,
-    className="nav-links")
+    className="nav-links"),
 
-])
+html.Form(
 
+    action="/logout",
+    method="get",
+
+    children=[
+
+        dbc.Button(
+            [
+                html.Span("🚪"),
+                html.Span(" Déconnexion", className="ms-2")
+            ],
+            type="submit",
+            color="danger",
+            className="w-100"
+        )
+
+    ]
+
+)
+
+],
+style={
+    "display": "flex",
+    "flexDirection": "column",
+    "height": "100%"
+})
 
 # =========================
 # DESKTOP SIDEBAR
@@ -128,22 +189,26 @@ content = html.Div(
 # =========================
 app.layout = html.Div([
 
-    # TOPBAR
-    html.Div([
+# TOPBAR
+html.Div([
 
-        html.Button(
-            "☰",
-            id="toggle-btn",
-            n_clicks=0,
-            className="toggle-btn"
-        ),
+    html.Button(
+        "☰",
+        id="toggle-btn",
+        n_clicks=0,
+        className="toggle-btn"
+    ),
 
-        html.H4(
-            "Dashboard Analytique",
-            className="app-title"
-        )
+    html.H4(
+        "Dashboard Analytique",
+        className="app-title"
+    ),
 
-    ], className="topbar"),
+html.Div(
+    id="user-profile",
+    className="user-profile"
+)
+], className="topbar"),
 
     # STORES
     dcc.Store(
@@ -211,6 +276,47 @@ def toggle_sidebar(n, current):
 def toggle_drawer(n, is_open):
 
     return not is_open
+
+
+# =========================
+# USER PROFILE
+# =========================
+@callback(
+    Output("user-profile", "children"),
+    Input("graph-store", "id")
+)
+def update_user_profile(_):
+
+    if not getattr(current_user, "is_authenticated", False):
+        return ""
+
+    initials = "".join(
+        nom[0].upper()
+        for nom in current_user.fullname.split()
+    )
+
+    return [
+
+        html.Div(
+            initials,
+            className="user-avatar"
+        ),
+
+        html.Div([
+
+            html.Div(
+                current_user.fullname,
+                className="user-fullname"
+            ),
+
+            html.Div(
+                current_user.direction,
+                className="user-direction"
+            )
+
+        ])
+
+    ]
 
 
 # =========================

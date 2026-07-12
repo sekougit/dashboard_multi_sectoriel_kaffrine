@@ -8,3 +8,7 @@ plotly
 python-dotenv
 uvicorn
 dotenv
+flask-login
+gspread
+google-auth
+bcrypt

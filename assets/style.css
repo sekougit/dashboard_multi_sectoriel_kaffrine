@@ -1,246 +1,318 @@
-body {
-    margin: 0;
-    background: #f8fafc;
+/* =========================================================
+   GLOBAL
+========================================================= */
+body{
+    margin:0;
+    background:#f8fafc;
+    font-family:Arial, Helvetica, sans-serif;
 }
 
-/* SIDEBAR */
-.sidebar {
-    position: fixed;
-    width: 240px;
-    height: 100vh;
-    background: #0f172a;
-    color: white;
-    padding: 20px;
-}
 
-/* CONTENT */
-.content {
-    margin-left: 260px;
-    padding: 20px;
-}
-
-/* FILTER BAR */
-.filters-bar {
-    position: sticky;
-    top: 0;
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    z-index: 999;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
-
-/* KPI CARD */
-.kpi-card {
-    background: white;
-    padding: 20px;
-    border-radius: 16px;
-    border-left: 5px solid #22c55e;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-
-    height: 130px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-/* KPI TITLE (ANTI OVERFLOW) */
-.kpi-title {
-    font-size: 11px;
-    color: #08090b;
-    font-weight: 600;
-
-    line-height: 1.2;
-
-    display: -webkit-box;
-    -webkit-line-clamp: 2;   /* 🔥 max 2 lignes */
-    -webkit-box-orient: vertical;
-
-    overflow: hidden;
-}
-/* KPI VALUE */
-.kpi-value {
-    font-size: 15px;
-    font-weight: 500;
-    color: #050505;
-}
-/* KPI SUB */
-.kpi-sub {
-    font-size: 11px;
-    color: #0c0c0c;
-    font-weight: 700;
-}
-
-.filter-block {
-    background: white;
-    border-radius: 12px;
-    padding: 10px;
-    border: 2px solid #dcfce7;
-    transition: 0.2s;
-}
-
-.filter-block:hover {
-    border-color: #22c55e;
-    box-shadow: 0 4px 10px rgba(34,197,94,0.15);
-}
-
-.filter-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #16a34a;
-    margin-bottom: 5px;
-}
-
-.filters-summary {
-    background: white;
-    padding: 12px;
-    border-radius: 12px;
-    border-left: 5px solid #22c55e;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
-
-.filter-badge {
-    background: #dcfce7;
-    color: #166534;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.filter-block {
-    background: white;
-    border-radius: 12px;
-    padding: 10px;
-    border: 2px solid #dcfce7;
-}
-
-.filter-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #16a34a;
-    margin-bottom: 5px;
-}
-
-.kpi-context {
-    margin-top: 8px;
-    font-size: 11px;
-    color: #475569;
-    line-height: 1.3;
-    font-weight: 700;
-}
-
-.kpi-context {
-    font-size: 11px;
-    color: #475569;
-    margin-top: 5px;
-}
-
-.kpi-prop {
-    font-size: 11px;
-    color: #16a34a;
-    font-weight: 600;
-    margin-top: 5px;
-}
-
-.filter-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: #2e7d32; /* vert pro */
-    margin-bottom: 4px;
-}
-
-/* =========================
-   TOPBAR FIXE
-========================= */
+/* =========================================================
+   TOPBAR
+========================================================= */
 .topbar{
-    height: 60px;
-    display: flex;
-    align-items: center;
-    padding: 0 15px;
-    background: #27ae60;
-    color: white;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:60px;
+
+    background:#27ae60;
+    color:white;
+
+    display:flex;
+    align-items:center;
+
+    padding:0 18px;
+
+    z-index:1000;
 }
 
 .toggle-btn{
-    font-size: 22px;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    margin-right: 15px;
+    background:none;
+    border:none;
+    color:white;
+    font-size:22px;
+    cursor:pointer;
 }
 
 .app-title{
-    margin: 0;
-    font-weight: 600;
+    margin-left:15px;
+    font-size:22px;
+    font-weight:700;
+    flex:1;
 }
 
 
-/* =========================
+/* =========================================================
+   USER PROFILE
+========================================================= */
+.user-profile{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-right:30px;
+}
+
+.user-avatar{
+    width:42px;
+    height:42px;
+
+    border-radius:50%;
+
+    background:white;
+    color:#27ae60;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-weight:bold;
+    font-size:17px;
+}
+
+.user-fullname{
+    font-size:15px;
+    font-weight:700;
+    color:white;
+}
+
+.user-direction{
+    font-size:12px;
+    color:#e5e7eb;
+}
+
+
+/* =========================================================
    SIDEBAR
-========================= */
+========================================================= */
 .sidebar{
-    position: fixed;
-    top: 60px;
-    left: 0;
-    height: calc(100vh - 60px);
-    background: #1e1e2f;
-    color: white;
-    transition: all 0.3s ease;
-    overflow-x: hidden;
-    padding: 15px;
-    z-index: 999;
+
+    position:fixed;
+
+    top:60px;
+    left:0;
+
+    height:calc(100vh - 60px);
+
+    background:#1e1e2f;
+
+    color:white;
+
+    display:flex;
+    flex-direction:column;
+
+    overflow:hidden;
+
+    transition:.30s;
 }
 
-/* OPEN */
 .sidebar.expanded{
-    width: 240px;
+    width:240px;
 }
 
-/* CLOSED */
 .sidebar.collapsed{
-    width: 70px;
+    width:70px;
 }
 
+.sidebar-header{
+    text-align:center;
+}
 
-/* LINKS */
+.sidebar-title{
+    margin-bottom:0;
+}
+
+.nav-links{
+    flex:1;
+}
+
 .nav-links a{
-    color: white !important;
-    padding: 10px;
-    display: block;
-    border-radius: 6px;
+
+    color:white !important;
+
+    border-radius:8px;
+
+    margin-bottom:5px;
+
+    transition:.25s;
 }
 
 .nav-links a:hover{
-    background: #2ecc71;
-    color: white !important;
+
+    background:#2ecc71;
+
+}
+
+.logout-btn{
+    padding:15px;
 }
 
 
-/* =========================
-   CONTENT (IMPORTANT FIX)
-========================= */
+/* =========================================================
+   CONTENT
+========================================================= */
 .content{
-    margin-top: 60px;
-    padding: 20px;
-    transition: all 0.3s ease;
-    background: #f5f6fa;
+
+    margin-top:60px;
+
+    padding:20px;
+
+    transition:.30s;
+
+    background:#f8fafc;
 }
 
-/* quand sidebar ouvert */
 .sidebar.expanded ~ .content{
-    margin-left: 240px;
+    margin-left:240px;
 }
 
-/* quand sidebar fermé */
 .sidebar.collapsed ~ .content{
-    margin-left: 70px;
+    margin-left:70px;
 }
 
+
+/* =========================================================
+   FILTER BAR
+========================================================= */
+.filters-bar{
+
+    position:sticky;
+
+    top:0;
+
+    background:white;
+
+    padding:15px;
+
+    border-radius:14px;
+
+    box-shadow:0 3px 10px rgba(0,0,0,.08);
+
+    z-index:100;
+}
+
+.filter-title{
+
+    font-size:12px;
+
+    font-weight:600;
+
+    color:#2e7d32;
+
+    margin-bottom:4px;
+}
+
+
+/* =========================================================
+   FILTER SUMMARY
+========================================================= */
+.filters-summary{
+
+    background:white;
+
+    padding:12px;
+
+    border-left:5px solid #22c55e;
+
+    border-radius:12px;
+
+    box-shadow:0 3px 10px rgba(0,0,0,.06);
+}
+
+.filter-badge{
+
+    background:#dcfce7;
+
+    color:#166534;
+
+    padding:6px 12px;
+
+    border-radius:20px;
+
+    font-size:12px;
+
+    font-weight:600;
+}
+
+
+/* =========================================================
+   KPI
+========================================================= */
+.kpi-card{
+
+    background:white;
+
+    border-left:5px solid #22c55e;
+
+    border-radius:16px;
+
+    padding:18px;
+
+    height:135px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-between;
+
+    box-shadow:0 4px 12px rgba(0,0,0,.06);
+}
+
+.kpi-title{
+
+    font-size:11px;
+
+    font-weight:700;
+
+    color:#111827;
+
+    line-height:1.25;
+
+    display:-webkit-box;
+
+    -webkit-line-clamp:2;
+    line-clamp:2;
+
+    -webkit-box-orient:vertical;
+
+    overflow:hidden;
+}
+
+.kpi-value{
+
+    font-size:18px;
+
+    font-weight:700;
+
+    color:#111827;
+}
+
+.kpi-sub{
+
+    font-size:11px;
+
+    font-weight:700;
+
+    color:#111827;
+}
+
+.kpi-context{
+
+    font-size:11px;
+
+    font-weight:600;
+
+    color:#64748b;
+}
+
+.kpi-prop{
+
+    font-size:11px;
+
+    color:#16a34a;
+
+    font-weight:700;
+}
