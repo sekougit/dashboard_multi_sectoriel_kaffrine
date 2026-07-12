@@ -28,96 +28,116 @@ dash.register_page(__name__, path="/secteurs")
 
 layout = html.Div([
 
-    html.H2(id="dynamic-title"),
-    html.Div(id="filters-summary", className="filters-summary mt-2"),
-# =========================
-# FILTERS
-# =========================
-dbc.Row([
+# html.H2(
+#     id="dynamic-title",
+#     className="mb-3"
+# ),
 
-    dbc.Col([
-        html.Div("📊 Secteur", className="filter-title"),
-        dcc.Dropdown(
-            id="secteur-dd",
-            placeholder="Choisir un secteur",
-            clearable=False,
-            persistence=True,
-            persistence_type="local"
-        )
-    ], width=2),
+dcc.Download(id="download-kpi"),
 
-    dbc.Col([
-        html.Div("📅 Année", className="filter-title"),
-        dcc.Dropdown(
-            id="annee-dd",
-            placeholder="Toutes les années",
-            multi=True,
-            persistence=True,
-            persistence_type="local"
-        )
-    ], width=2),
+# =====================================================
+# BARRE STICKY
+# =====================================================
+html.Div([
 
-    dbc.Col([
-        html.Div("🌍 Région", className="filter-title"),
-        dcc.Dropdown(
-            id="region-dd",
-            placeholder="Toutes les régions",
-            multi=True,
-            persistence=True,
-            persistence_type="local"
-        )
-    ], width=2),
+    html.H2(
+    id="dynamic-title",
+    className="graph-title"
+),
 
-    dbc.Col([
-        html.Div("🏙️ Département", className="filter-title"),
-        dcc.Dropdown(
-            id="departement-dd",
-            placeholder="Tous les départements",
-            multi=True,
-            persistence=True,
-            persistence_type="local"
-        )
-    ], width=2),
+    # html.Div(
+    #     id="filters-summary",
+    #     className="filters-summary mb-3"
+    # ),
 
-    dbc.Col([
-        html.Div("📍 Commune", className="filter-title"),
-        dcc.Dropdown(
-            id="commune-dd",
-            placeholder="Toutes les communes",
-            multi=True,
-            persistence=True,
-            persistence_type="local"
-        )
-    ], width=2),
+    dbc.Row([
 
-    dbc.Col([
-        html.Div("📈 Indicateurs", className="filter-title"),
-        dcc.Dropdown(
-            id="indicateur-dd",
-            placeholder="Choisir indicateurs",
-            multi=True,
-            persistence=True,
-            persistence_type="local"
-        )
-    ], width=2),
+        dbc.Col([
+            html.Div("📊 Secteur", className="filter-title"),
+            dcc.Dropdown(
+                id="secteur-dd",
+                clearable=False,
+                persistence=True,
+                persistence_type="local"
+            )
+        ], xs=12, sm=6, md=4, lg=2),
 
-], className="filters-bar"),
+        dbc.Col([
+            html.Div("📅 Année", className="filter-title"),
+            dcc.Dropdown(
+                id="annee-dd",
+                multi=True,
+                persistence=True,
+                persistence_type="local"
+            )
+        ], xs=12, sm=6, md=4, lg=2),
 
-    dcc.Download(id="download-kpi"),
+        dbc.Col([
+            html.Div("🌍 Région", className="filter-title"),
+            dcc.Dropdown(
+                id="region-dd",
+                multi=True,
+                persistence=True,
+                persistence_type="local"
+            )
+        ], xs=12, sm=6, md=4, lg=2),
 
-    html.Div([
+        dbc.Col([
+            html.Div("🏙️ Département", className="filter-title"),
+            dcc.Dropdown(
+                id="departement-dd",
+                multi=True,
+                persistence=True,
+                persistence_type="local"
+            )
+        ], xs=12, sm=6, md=4, lg=2),
 
-    dbc.Button(
-        "📥 Télécharger KPI sélectionnés",
-        id="download-kpi-btn",
-        color="dark",
-        className="mb-3"
-    ),
+        dbc.Col([
+            html.Div("📍 Commune", className="filter-title"),
+            dcc.Dropdown(
+                id="commune-dd",
+                multi=True,
+                persistence=True,
+                persistence_type="local"
+            )
+        ], xs=12, sm=6, md=4, lg=2),
 
-], className="d-flex justify-content-end"),
+        dbc.Col([
+            html.Div("📈 Indicateurs", className="filter-title"),
+            dcc.Dropdown(
+                id="indicateur-dd",
+                multi=True,
+                persistence=True,
+                persistence_type="local"
+            )
+        ], xs=12, sm=6, md=4, lg=2),
 
-    html.Div(id="kpi-container")
+    ], className="g-2"),
 
+    html.Div(
+
+        dbc.Button(
+            "📥 Télécharger KPI sélectionnés",
+            id="download-kpi-btn",
+            color="dark"
+        ),
+
+        className="d-flex justify-content-end mt-3"
+
+    )
+
+],
+className="graph-toolbar"
+),
+
+
+
+# =====================================================
+# KPI
+# =====================================================
+html.Div(
+    id="kpi-container"
+)
 ])
 
 @callback(
@@ -199,31 +219,31 @@ def update_filters(secteur, regions, departements):
         [{"label": i, "value": i} for i in communes],
     )
 
-@callback(
-    Output("filters-summary", "children"),
+# @callback(
+#     Output("filters-summary", "children"),
 
-    Input("annee-dd", "value"),
-    Input("region-dd", "value"),
-    Input("departement-dd", "value"),
-    Input("commune-dd", "value"),
-)
-def show_selected(annee, region, dep, com):
+#     Input("annee-dd", "value"),
+#     Input("region-dd", "value"),
+#     Input("departement-dd", "value"),
+#     Input("commune-dd", "value"),
+# )
+# def show_selected(annee, region, dep, com):
 
-    def format(label, value):
-        if not value:
-            return None
+#     def format(label, value):
+#         if not value:
+#             return None
 
-        if isinstance(value, list):
-            value = ", ".join(map(str, value))
+#         if isinstance(value, list):
+#             value = ", ".join(map(str, value))
 
-        return html.Span(f"{label}: {value}", className="filter-badge")
+#         return html.Span(f"{label}: {value}", className="filter-badge")
 
-    return html.Div([
-        format("📅 Année", annee),
-        format("🌍 Région", region),
-        format("🏙️ Département", dep),
-        format("📍 Commune", com),
-    ], className="d-flex gap-2 flex-wrap")
+#     return html.Div([
+#         format("📅 Année", annee),
+#         format("🌍 Région", region),
+#         format("🏙️ Département", dep),
+#         format("📍 Commune", com),
+#     ], className="d-flex gap-2 flex-wrap")
 
 @callback(
     Output("filters-store", "data"),
@@ -473,7 +493,7 @@ def update_kpis(
 
                 html.H5(
                     f"📊 {compare_dim.upper()} : {key}",
-                    className="mt-4 mb-3 fw-bold"
+                    className="zone-title"
                 ),
 
                 dbc.Row(cards, className="g-3")

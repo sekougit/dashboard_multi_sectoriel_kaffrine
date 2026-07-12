@@ -23,15 +23,12 @@ dash.register_page(
 )
 
 
-# =========================================================
-# LAYOUT
-# =========================================================
 layout = html.Div([
 
-    html.H2(
-        id="graph-title",
-        className="mb-3"
-    ),
+    # html.H2(
+    #     id="graph-title",
+    #     className="mb-3"
+    # ),
 
     dcc.Store(
         id="graph-store",
@@ -42,133 +39,124 @@ layout = html.Div([
         id="restore-done",
         data=False
     ),
-    # =====================================================
-    # DOWNLOAD
-    # =====================================================
-    dcc.Download(id="download-graph-excel"),
 
+    dcc.Download(id="download-graph-excel"),
     dcc.Download(id="download-all-excel"),
     dcc.Download(id="download-all-images"),
+
     # =====================================================
-    # FILTRES
+    # BARRE FIXE
     # =====================================================
-    dbc.Row([
+    html.Div(
 
-        dbc.Col([
+        [
+                    html.H2(
+            id="graph-title",
+            className="graph-title"
+        ),
+
+            dbc.Row([
+
+                dbc.Col([
+                    html.Div("📊 Secteur", className="filter-title"),
+                    dcc.Dropdown(
+                        id="graph-secteur",
+                        clearable=False,
+                        persistence=True,
+                        persistence_type="local"
+                    )
+                ], xs=12, sm=6, md=4, lg=2),
+
+                dbc.Col([
+                    html.Div("📅 Année", className="filter-title"),
+                    dcc.Dropdown(
+                        id="graph-annee",
+                        multi=True,
+                        persistence=True,
+                        persistence_type="local"
+                    )
+                ], xs=12, sm=6, md=4, lg=2),
+
+                dbc.Col([
+                    html.Div("🌍 Région", className="filter-title"),
+                    dcc.Dropdown(
+                        id="graph-region",
+                        multi=True,
+                        persistence=True,
+                        persistence_type="local"
+                    )
+                ], xs=12, sm=6, md=4, lg=2),
+
+                dbc.Col([
+                    html.Div("🏙️ Département", className="filter-title"),
+                    dcc.Dropdown(
+                        id="graph-departement",
+                        multi=True,
+                        persistence=True,
+                        persistence_type="local"
+                    )
+                ], xs=12, sm=6, md=4, lg=2),
+
+                dbc.Col([
+                    html.Div("📍 Commune", className="filter-title"),
+                    dcc.Dropdown(
+                        id="graph-commune",
+                        multi=True,
+                        persistence=True,
+                        persistence_type="local"
+                    )
+                ], xs=12, sm=6, md=4, lg=2),
+
+                dbc.Col([
+                    html.Div("📈 Indicateur", className="filter-title"),
+                    dcc.Dropdown(
+                        id="graph-indicateur",
+                        multi=True,
+                        persistence=True,
+                        persistence_type="local"
+                    )
+                ], xs=12, sm=6, md=4, lg=2),
+
+            ], className="g-2"),
+
             html.Div(
-                "📊 Secteur",
-                className="filter-title"
-            ),
 
-            dcc.Dropdown(
-                id="graph-secteur",
-                clearable=False,
-                persistence=True,
-                persistence_type="local"
+                [
+
+                    dbc.Button(
+                        "📥 Télécharger Excel",
+                        id="download-all-excel-btn",
+                        color="success",
+                        className="me-2"
+                    ),
+
+                    dbc.Button(
+                        "🖼️ Télécharger Images",
+                        id="download-all-images-btn",
+                        color="primary"
+                    ),
+
+                ],
+
+                className="d-flex justify-content-end mt-3"
+
             )
 
-        ], xs=12, sm=6, md=4, lg=2),
+        ],
 
-        dbc.Col([
-            html.Div(
-                "📅 Année",
-                className="filter-title"
-            ),
+        className="graph-toolbar"
 
-            dcc.Dropdown(
-                id="graph-annee",
-                multi=True,
-                persistence=True,
-                persistence_type="local"
-            )
-
-        ], xs=12, sm=6, md=4, lg=2),
-
-        dbc.Col([
-            html.Div(
-                "🌍 Région",
-                className="filter-title"
-            ),
-
-            dcc.Dropdown(
-                id="graph-region",
-                multi=True,
-                persistence=True,
-                persistence_type="local"
-            )
-
-        ], xs=12, sm=6, md=4, lg=2),
-
-        dbc.Col([
-            html.Div(
-                "🏙️ Département",
-                className="filter-title"
-            ),
-
-            dcc.Dropdown(
-                id="graph-departement",
-                multi=True,
-                persistence=True,
-                persistence_type="local"
-            )
-
-        ], xs=12, sm=6, md=4, lg=2),
-
-        dbc.Col([
-            html.Div(
-                "📍 Commune",
-                className="filter-title"
-            ),
-
-            dcc.Dropdown(
-                id="graph-commune",
-                multi=True,
-                persistence=True,
-                persistence_type="local"
-            )
-
-        ], xs=12, sm=6, md=4, lg=2),
-
-        dbc.Col([
-            html.Div(
-                "📈 Indicateur",
-                className="filter-title"
-            ),
-
-            dcc.Dropdown(
-                id="graph-indicateur",
-                multi=True,
-                persistence=True,
-                persistence_type="local"
-            )
-
-        ], xs=12, sm=6, md=4, lg=2),
-
-    ], className="filters-bar g-2"),
-
-    html.Br(),
-
-    html.Div([
-
-    dbc.Button(
-        "📥 Télécharger Excel",
-        id="download-all-excel-btn",
-        color="success",
-        className="me-2"
     ),
 
-    dbc.Button(
-        "🖼️ Télécharger Images",
-        id="download-all-images-btn",
-        color="primary"
+    html.Div(
+        style={"height": "15px"}
     ),
 
-], className="d-flex justify-content-end mb-3"),
-
-    html.Div(id="graphs-container")
+    html.Div(
+        id="graphs-container"
+    )
 
 ])
-
 
 # =========================================================
 # TITRE
@@ -505,41 +493,44 @@ def generate_graphs(
             [dimension, "annee"]
         )
 
-        # =================================================
-        # POURCENTAGES
-        # =================================================
-        if stack_mode:
+        # =====================================================
+        # VALEUR A AFFICHER
+        # =====================================================
+        if is_rate_indicator(ind):
 
-            grouped["percent"] = grouped.groupby(
-                dimension
-            )[ind].transform(
-                lambda x: x / x.sum() * 100
-            )
+            # Pour un taux on affiche directement la moyenne
+            grouped["y"] = grouped[ind]
 
         else:
 
-            total = grouped[ind].sum()
+            # Pour une valeur brute on affiche les proportions
+            if stack_mode:
 
-            grouped["percent"] = (
-                grouped[ind] / total
-            ) * 100
+                grouped["y"] = grouped.groupby(
+                    dimension
+                )[ind].transform(
+                    lambda x: x / x.sum() * 100
+                )
 
+            else:
+
+                total = grouped[ind].sum()
+
+                grouped["y"] = grouped[ind] / total * 100
         # =================================================
         # LABELS
         # =================================================
         if is_rate_indicator(ind):
 
-            grouped["label"] = grouped.apply(
-                lambda r:
-                f"{r[ind]:.2f}%\n({r['percent']:.1f}%)",
-                axis=1
+            grouped["label"] = grouped[ind].map(
+                lambda x: f"{x:.2f}%"
             )
 
         else:
 
             grouped["label"] = grouped.apply(
                 lambda r:
-                f"{int(r[ind]):,}\n({r['percent']:.1f}%)".replace(",", " "),
+                f"{int(r[ind]):,}\n({r['y']:.1f}%)".replace(",", " "),
                 axis=1
             )
         # =================================================
@@ -555,13 +546,12 @@ def generate_graphs(
         fig = px.bar(
             grouped,
             x=dimension,
-            y="percent",
+            y="y",
             color=grouped["annee"].astype(str),
             color_discrete_map=color_map,
-            barmode="stack" if stack_mode else "group",
+            barmode="stack" if (stack_mode and not is_rate_indicator(ind)) else "group",
             text="label"
         )
-
         fig.update_layout(
             title={
                 "text": f"<b>{ind} ({titre})</b>",
@@ -582,12 +572,14 @@ def generate_graphs(
 
             customdata=grouped[["annee", "valeur_fmt", "nb_na"]],
 
-            hovertemplate=
-            "<b>%{x}</b><br>" +
-            "Année : %{customdata[0]}<br>" +
-            "Valeur : %{customdata[1]}<br>" +
-            "Vides : %{customdata[2]}<br>" +
-            "Pourcentage : %{y:.2f}%<extra></extra>"
+            hovertemplate=(
+                f"<b>%{{x}}</b><br>"
+                "Année : %{customdata[0]}<br>"
+                "Valeur : %{customdata[1]}<br>"
+                "Vides : %{customdata[2]}<br>"
+                f"{'Taux moyen' if is_rate_indicator(ind) else 'Proportion'} : %{{y:.2f}}%"
+                "<extra></extra>"
+            )
         )
         # =================================================
         # LAYOUT
@@ -630,16 +622,14 @@ def generate_graphs(
             ),
 
             yaxis=dict(
-                title="Proportion (%)",
+                title="Taux moyen (%)" if is_rate_indicator(ind) else "Proportion (%)",
                 tickfont=dict(size=9)
             )
         )
 
-        if stack_mode:
+        if stack_mode and not is_rate_indicator(ind):
 
-            fig.update_yaxes(
-                range=[0, 100]
-            )
+            fig.update_yaxes(range=[0, 100])
 
         # =================================================
         # CARD GRAPH

@@ -11,7 +11,7 @@ import pandas as pd
 SHEET_ID = os.getenv("USERS_SHEET_ID"
 )
 
-CACHE_DURATION = 300  # 5 minutes
+CACHE_DURATION = 60  # 5 minutes
 
 DOWNLOAD_URL = (
     f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=xlsx"
