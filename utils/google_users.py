@@ -8,9 +8,7 @@ import pandas as pd
 # ==========================================================
 # CONFIGURATION
 # ==========================================================
-SHEET_ID = os.getenv(
-    "USERS_SHEET_ID",
-    USERS_SHEET_ID
+SHEET_ID = os.getenv("USERS_SHEET_ID"
 )
 
 CACHE_DURATION = 300  # 5 minutes
