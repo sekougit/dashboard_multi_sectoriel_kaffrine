@@ -4,6 +4,7 @@ import time
 import bcrypt
 import requests
 import pandas as pd
+from datetime import datetime
 
 # ==========================================================
 # CONFIGURATION
@@ -76,13 +77,20 @@ def get_all_users():
 
         try:
 
-            print("🔄 Actualisation des utilisateurs...")
+            if _last_refresh == 0:
+                print("🔄 Première actualisation des utilisateurs...")
+            else:
+                derniere = datetime.fromtimestamp(_last_refresh).strftime("%d/%m/%Y à %H:%M:%S")
+                print(f"🔄 Actualisation des utilisateurs (dernière : {derniere})...")
 
             _users_cache = download_users()
-
             _last_refresh = now
 
             print(f"✅ {len(_users_cache)} utilisateurs chargés.")
+            print(
+                f"🕒 Mise à jour effectuée le "
+                f"{datetime.now().strftime('%d/%m/%Y à %H:%M:%S')}"
+            )
 
         except Exception as e:
 

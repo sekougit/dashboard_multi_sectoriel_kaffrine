@@ -147,7 +147,7 @@ body{
 
 
 /* ==========================================================
-   SIDEBAR
+   SIDEBAR (desktop)
 ========================================================== */
 
 .sidebar{
@@ -226,6 +226,64 @@ body{
 
 
 /* ==========================================================
+   MOBILE DRAWER (dbc.Offcanvas, className="mobile-drawer")
+   FIX: sans ces règles, Bootstrap applique un fond BLANC par
+   défaut à l'Offcanvas. Comme .nav-links a est en texte blanc,
+   ça rendait le menu mobile illisible ("sidebar blanche").
+   On lui applique le même thème sombre que la sidebar desktop.
+========================================================== */
+
+.mobile-drawer.offcanvas{
+
+    background:#1f2937 !important;
+
+    color:white;
+
+}
+
+.mobile-drawer .offcanvas-header{
+
+    background:#1f2937;
+
+    color:white;
+
+    border-bottom:1px solid rgba(255,255,255,.1);
+
+}
+
+.mobile-drawer .offcanvas-title{
+
+    color:white;
+
+    font-weight:700;
+
+}
+
+.mobile-drawer .offcanvas-body{
+
+    background:#1f2937;
+
+    padding:15px;
+
+}
+
+/* Bouton de fermeture (X) : par défaut il est noir sur noir */
+.mobile-drawer .btn-close{
+
+    filter:invert(1) grayscale(100%) brightness(200%);
+
+    opacity:.8;
+
+}
+
+.mobile-drawer .btn-close:hover{
+
+    opacity:1;
+
+}
+
+
+/* ==========================================================
    CONTENU
 ========================================================== */
 
@@ -253,7 +311,11 @@ body{
 
 
 /* ==========================================================
-   TOOLBAR STICKY
+   TOOLBAR STICKY (filtres)
+   FIX: ajout de flex-wrap + max-height/overflow pour empêcher
+   le bloc de grandir indéfiniment et de masquer les graphiques
+   et KPI quand les filtres passent sur plusieurs lignes
+   (tablette/mobile).
 ========================================================== */
 
 .graph-toolbar{
@@ -268,11 +330,38 @@ body{
 
     border-radius:14px;
 
-    padding:18px;
+    padding:14px 18px;
 
     margin-bottom:20px;
 
     box-shadow:0 3px 12px rgba(0,0,0,.08);
+
+    max-height:40vh;
+
+    overflow-y:auto;
+
+}
+
+/* La ligne de filtres doit pouvoir passer à la ligne
+   plutôt que de forcer la hauteur du conteneur sticky
+   à s'étirer sans contrôle */
+.filters-bar{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px 14px;
+
+    align-items:flex-end;
+
+}
+
+.filters-bar > *{
+
+    flex:1 1 160px;
+
+    min-width:140px;
 
 }
 
@@ -439,9 +528,12 @@ body{
 
 
 /* ==========================================================
-   MOBILE
+   MOBILE / TABLETTE
+   FIX: sur petits écrans, la barre sticky prenait encore plus
+   de place relative à l'écran. On la rend moins haute et on
+   réduit le padding pour laisser voir les graphiques/KPI en
+   dessous sans avoir à scroller dans le vide.
 ========================================================== */
-
 @media(max-width:992px){
 
 .sidebar{
@@ -459,6 +551,8 @@ body{
 .graph-toolbar{
 
     top:65px;
+
+    max-height:32vh;
 
 }
 
@@ -487,22 +581,21 @@ body{
 
 .graph-toolbar{
 
+    top:65px;
+
     padding:12px;
-        position:sticky;
 
-    top:70px;          /* juste sous la topbar */
+    max-height:28vh;
 
-    z-index:998;
+    overflow-y:auto;
 
-    background:white;
+}
 
-    padding:18px;
+.filters-bar > *{
 
-    border-radius:14px;
+    flex:1 1 100%;
 
-    margin-bottom:20px;
-
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    min-width:0;
 
 }
 
