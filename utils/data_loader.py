@@ -209,7 +209,8 @@ FILES = {
 'SPORTS': os.getenv('SPORTS_URL'),
 'TOURISME': os.getenv('TOURISME_URL'),
 'TRANSPORTS': os.getenv('TRANSPORTS_URL'),
-'VULNERABILITE_PROTECTION_SOCIALE': os.getenv('VULNERABILITE_PROTECTION_SOCIALE_URL')
+'VULNERABILITE_PROTECTION_SOCIALE': os.getenv('VULNERABILITE_PROTECTION_SOCIALE_URL'),
+'POPULATION': os.getenv('POPULATION_URL')
 }
 
 
@@ -218,7 +219,8 @@ FILES = {
 # =========================
 def get_all_sectors():
 
-    return list(FILES.keys())
+    return sorted(FILES.keys())
+
 
 
 # =========================
