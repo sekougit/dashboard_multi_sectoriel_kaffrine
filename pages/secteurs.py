@@ -53,7 +53,10 @@ html.Div([
     dbc.Row([
 
         dbc.Col([
-            html.Div("📊 Secteur", className="filter-title"),
+            html.Div([
+                    html.I(className="bi bi-grid-fill me-1"),
+                    "Secteur"
+                ], className="filter-title"),
             dcc.Dropdown(
                 id="secteur-dd",
                 clearable=False,
@@ -63,7 +66,10 @@ html.Div([
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("📅 Année", className="filter-title"),
+            html.Div([
+                html.I(className="bi bi-calendar3 me-1"),
+                "Année"
+            ], className="filter-title"),
             dcc.Dropdown(
                 id="annee-dd",
                 multi=True,
@@ -73,7 +79,10 @@ html.Div([
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("🌍 Région", className="filter-title"),
+            html.Div([
+                    html.I(className="bi bi-globe2 me-1"),
+                    "Région"
+                ], className="filter-title"),
             dcc.Dropdown(
                 id="region-dd",
                 multi=True,
@@ -83,7 +92,10 @@ html.Div([
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("🏙️ Département", className="filter-title"),
+                html.Div([
+                    html.I(className="bi bi-buildings-fill me-1"),
+                    "Département"
+                ], className="filter-title"),
             dcc.Dropdown(
                 id="departement-dd",
                 multi=True,
@@ -93,7 +105,10 @@ html.Div([
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("📍 Commune", className="filter-title"),
+                            html.Div([
+                    html.I(className="bi bi-geo-alt-fill me-1"),
+                    "Commune"
+                ], className="filter-title"),
             dcc.Dropdown(
                 id="commune-dd",
                 multi=True,
@@ -103,7 +118,10 @@ html.Div([
         ], xs=12, sm=6, md=4, lg=2),
 
         dbc.Col([
-            html.Div("📈 Indicateurs", className="filter-title"),
+            html.Div([
+                    html.I(className="bi bi-bar-chart-line-fill me-1"),
+                    "Indicateur"
+                ], className="filter-title"),
             dcc.Dropdown(
                 id="indicateur-dd",
                 multi=True,
@@ -117,9 +135,13 @@ html.Div([
     html.Div(
 
         dbc.Button(
-            "📥 Télécharger KPI sélectionnés",
-            id="download-kpi-btn",
-            color="dark"
+                            [
+                    html.I(className="bi bi-download me-2"),
+                    "Télécharger KPI"
+                ],
+                id="download-kpi-btn",
+                color="success",
+                className="me-2"
         ),
 
         className="d-flex justify-content-end mt-3"
@@ -154,9 +176,9 @@ def load_secteurs(_):
 def update_title(secteur):
 
     if not secteur:
-        return "📊 Analyse multi-sectorielle"
+        return "Analyse multi-sectorielle"
 
-    return f"📊 Analyse multi-sectorielle - {secteur}"
+    return f"Analyse multi-sectorielle - {secteur}"
 
 
 
@@ -313,7 +335,7 @@ def update_kpis(
     # =========================
     if not secteur:
         return html.Div(
-            "📊 Sélectionnez un secteur",
+            "Sélectionnez un secteur",
             className="text-center mt-4 fw-bold text-muted"
         )
 
@@ -336,13 +358,13 @@ def update_kpis(
 
     if df.empty:
         return html.Div(
-            "❌ Aucune donnée disponible",
+            "Aucune donnée disponible",
             className="text-center mt-4 fw-bold text-danger"
         )
 
     if not indicateurs:
         return html.Div(
-            "📈 Sélectionnez un ou plusieurs indicateurs",
+            "Sélectionnez un ou plusieurs indicateurs",
             className="text-center mt-4 fw-bold text-muted"
         )
 
@@ -492,7 +514,7 @@ def update_kpis(
             html.Div([
 
                 html.H5(
-                    f"📊 {compare_dim.upper()} : {key}",
+                    f"{compare_dim.upper()} : {key}",
                     className="zone-title"
                 ),
 

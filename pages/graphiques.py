@@ -58,7 +58,10 @@ layout = html.Div([
             dbc.Row([
 
                 dbc.Col([
-                    html.Div("📊 Secteur", className="filter-title"),
+                                        html.Div([
+                        html.I(className="bi bi-grid-fill me-1"),
+                        "Secteur"
+                    ], className="filter-title"),
                     dcc.Dropdown(
                         id="graph-secteur",
                         clearable=False,
@@ -68,7 +71,10 @@ layout = html.Div([
                 ], xs=12, sm=6, md=4, lg=2),
 
                 dbc.Col([
-                    html.Div("📅 Année", className="filter-title"),
+                                        html.Div([
+                        html.I(className="bi bi-calendar3 me-1"),
+                        "Année"
+                    ], className="filter-title"),
                     dcc.Dropdown(
                         id="graph-annee",
                         multi=True,
@@ -78,7 +84,10 @@ layout = html.Div([
                 ], xs=12, sm=6, md=4, lg=2),
 
                 dbc.Col([
-                    html.Div("🌍 Région", className="filter-title"),
+                                        html.Div([
+                        html.I(className="bi bi-globe2 me-1"),
+                        "Région"
+                    ], className="filter-title"),
                     dcc.Dropdown(
                         id="graph-region",
                         multi=True,
@@ -88,7 +97,10 @@ layout = html.Div([
                 ], xs=12, sm=6, md=4, lg=2),
 
                 dbc.Col([
-                    html.Div("🏙️ Département", className="filter-title"),
+                                        html.Div([
+                        html.I(className="bi bi-buildings-fill me-1"),
+                        "Département"
+                    ], className="filter-title"),
                     dcc.Dropdown(
                         id="graph-departement",
                         multi=True,
@@ -98,7 +110,10 @@ layout = html.Div([
                 ], xs=12, sm=6, md=4, lg=2),
 
                 dbc.Col([
-                    html.Div("📍 Commune", className="filter-title"),
+                                        html.Div([
+                        html.I(className="bi bi-geo-alt-fill me-1"),
+                        "Commune"
+                    ], className="filter-title"),
                     dcc.Dropdown(
                         id="graph-commune",
                         multi=True,
@@ -108,7 +123,10 @@ layout = html.Div([
                 ], xs=12, sm=6, md=4, lg=2),
 
                 dbc.Col([
-                    html.Div("📈 Indicateur", className="filter-title"),
+                                            html.Div([
+                            html.I(className="bi bi-bar-chart-line-fill me-1"),
+                            "Indicateur"
+                        ], className="filter-title"),
                     dcc.Dropdown(
                         id="graph-indicateur",
                         multi=True,
@@ -124,16 +142,23 @@ layout = html.Div([
                 [
 
                     dbc.Button(
-                        "📥 Télécharger Excel",
+                                                [
+                            html.I(className="bi bi-file-earmark-excel-fill me-2"),
+                            "Télécharger Excel"
+                        ],
                         id="download-all-excel-btn",
                         color="success",
                         className="me-2"
                     ),
 
                     dbc.Button(
-                        "🖼️ Télécharger Images",
+                                                [
+                            html.I(className="bi bi-image-fill me-2"),
+                            "Télécharger Images"
+                        ],
                         id="download-all-images-btn",
-                        color="primary"
+                        color="success",
+                        className="me-2"
                     ),
 
                 ],
@@ -168,9 +193,9 @@ layout = html.Div([
 def update_title(secteur):
 
     if not secteur:
-        return "📊 Graphiques analytiques"
+        return "Graphiques analytiques"
 
-    return f"📊 Graphiques analytiques - {secteur}"
+    return f"Graphiques analytiques - {secteur}"
 
 
 # =========================================================
@@ -646,7 +671,10 @@ def generate_graphs(
                     html.Div([
 
                         dbc.Button(
-                            "📥 Excel",
+                                                                            [
+                            html.I(className="bi bi-file-earmark-excel-fill me-2"),
+                            "Excel"
+                        ],
                             id={
                                 "type": "excel-btn",
                                 "index": ind

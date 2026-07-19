@@ -10,9 +10,31 @@ from flask_login import current_user
 app = dash.Dash(
     __name__,
     use_pages=True,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
+    external_stylesheets=[dbc.themes.BOOTSTRAP,dbc.icons.BOOTSTRAP],
     suppress_callback_exceptions=True
 )
+
+app.index_string = '''
+<!DOCTYPE html>
+<html>
+    <head>
+        {%metas%}
+        <title>{%title%}</title>
+        {%favicon%}
+        <link rel="icon" type="image/png" href="/assets/mon_icone.png">
+        <link rel="apple-touch-icon" href="/assets/mon_icone_180.png">
+        {%css%}
+    </head>
+    <body>
+        {%app_entry%}
+        <footer>
+            {%config%}
+            {%scripts%}
+            {%renderer%}
+        </footer>
+    </body>
+</html>
+'''
 
 
 
@@ -73,7 +95,10 @@ sidebar_content = html.Div([
 
     html.Div([
         html.H3(
-            "📊 Dashboard",
+                [
+        html.I(className="bi bi-speedometer2 me-2"),
+        "Dashboard"
+            ],
             className="sidebar-title"
         ),
     ], className="sidebar-header"),
@@ -83,37 +108,55 @@ sidebar_content = html.Div([
     dbc.Nav([
 
         dbc.NavLink(
-            [html.Span("🏠"), html.Span(" Accueil", className="link-text")],
+            [
+    html.I(className="bi bi-house-door-fill me-2"),
+    "Accueil"
+                ],
             href="/",
             active="exact"
         ),
 
         dbc.NavLink(
-            [html.Span("📊"), html.Span(" Secteurs", className="link-text")],
+            [
+    html.I(className="bi bi-grid-3x3-gap-fill me-2"),
+    "Secteurs"
+            ],
             href="/secteurs",
             active="exact"
         ),
 
         dbc.NavLink(
-            [html.Span("📈"), html.Span(" Graphiques", className="link-text")],
+            [
+    html.I(className="bi bi-bar-chart-line-fill me-2"),
+    "Graphiques"
+            ],
             href="/graphiques",
             active="exact"
         ),
 
         dbc.NavLink(
-            [html.Span("🗺️"), html.Span(" Cartographie", className="link-text")],
+            [
+    html.I(className="bi bi-geo-alt-fill me-2"),
+    "Cartographie"
+                        ],
             href="/cartographie",
             active="exact"
         ),
 
         dbc.NavLink(
-            [html.Span("⚖️"), html.Span(" Comparaison", className="link-text")],
+                        [
+                html.I(className="bi bi-bar-chart-steps me-2"),
+                html.Span("Comparaison", className="link-text")
+            ],
             href="/comparaison",
             active="exact"
         ),
 
         dbc.NavLink(
-            [html.Span("📑"), html.Span(" Statistiques", className="link-text")],
+                        [
+                html.I(className="bi bi-clipboard-data-fill me-2"),
+                html.Span("Statistiques", className="link-text")
+            ],
             href="/statistiques",
             active="exact"
         ),
@@ -132,8 +175,8 @@ html.Form(
 
         dbc.Button(
             [
-                html.Span("🚪"),
-                html.Span(" Déconnexion", className="ms-2")
+                html.I(className="bi bi-box-arrow-right me-2"),
+                "Déconnexion"
             ],
             type="submit",
             color="danger",

@@ -36,7 +36,7 @@ body{
 
     height:60px;
 
-    background:#27ae60;
+    background:#389d49;
 
     color:white;
 
@@ -85,6 +85,8 @@ body{
     font-size:22px;
 
     font-weight:700;
+
+    
 
 }
 
@@ -162,7 +164,7 @@ body{
 
     width:240px;
 
-    background:#1f2937;
+    background:#389d49;
 
     color:white;
 
@@ -218,6 +220,14 @@ body{
 
 }
 
+.nav-links .nav-link.active{
+
+    background:#13da66 !important;   /* remplace par la couleur de ton choix */
+
+    color:white !important;
+
+}
+
 .logout-container{
 
     margin-top:auto;
@@ -261,7 +271,7 @@ body{
 
 .mobile-drawer .offcanvas-body{
 
-    background:#1f2937;
+    background:#389d49;
 
     padding:15px;
 
@@ -600,3 +610,28 @@ body{
 }
 
 }
+
+.sidebar i{
+
+    width:22px;
+
+    text-align:center;
+
+    font-size:18px;
+
+}
+
+.filter-title i{
+
+    color:#198754;
+
+    margin-right:6px;
+
+}
+
+.topbar-logo{
+
+    height:42px;
+
+}
+
