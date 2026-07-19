@@ -285,7 +285,7 @@ button:hover{
         <h1 class="marque-titre">Dashboard Multi&#8209;Sectoriel</h1>
         <p class="marque-soustitre">
             Le suivi des indicateurs de développement territorial,
-            par secteurs, années, departements, communes.
+            secteur par secteur, commune par commune.
         </p>
     </div>
 
@@ -310,9 +310,9 @@ button:hover{
             <p>Accédez à votre espace de suivi.</p>
         </div>
 
-        <!-- 
-        <div class="error"></div>
-         -->
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
 
         <form method="POST">
 
@@ -375,7 +375,7 @@ def login():
 
             return redirect("/")
 
-        error = "Nom d'utilisateur ou mot de passe incorrect."
+        error = "Nom d'utilisateur ou mot de passe incorrect ou utilisateur inactif."
 
     response = make_response(
         render_template_string(
