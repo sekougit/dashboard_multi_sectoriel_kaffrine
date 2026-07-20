@@ -146,7 +146,7 @@ sidebar_content = html.Div([
         dbc.NavLink(
                         [
                 html.I(className="bi bi-bar-chart-steps me-2"),
-                html.Span("Comparaison", className="link-text")
+                "Comparaison"
             ],
             href="/comparaison",
             active="exact"
@@ -155,7 +155,7 @@ sidebar_content = html.Div([
         dbc.NavLink(
                         [
                 html.I(className="bi bi-clipboard-data-fill me-2"),
-                html.Span("Statistiques", className="link-text")
+                "Statistiques"
             ],
             href="/statistiques",
             active="exact"
