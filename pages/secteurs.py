@@ -176,9 +176,21 @@ def load_secteurs(_):
 def update_title(secteur):
 
     if not secteur:
-        return "Analyse multi-sectorielle"
+        return html.Div(
+            "Indicateurs sectoriels",
+            className="page-title"
+        )
 
-    return f"Analyse multi-sectorielle - {secteur}"
+    return html.Div([
+        html.Span(
+            "Indicateurs sectoriels",
+            className="page-title-main"
+        ),
+        html.Span(
+            f" • {secteur}",
+            className="page-title-sector"
+        )
+    ])
 
 
 
@@ -364,7 +376,7 @@ def update_kpis(
 
     if not indicateurs:
         return html.Div(
-            "Sélectionnez un ou plusieurs indicateurs",
+            "Veuillez sélectionnez un ou plusieurs indicateurs",
             className="text-center mt-4 fw-bold text-muted"
         )
 

@@ -193,9 +193,21 @@ layout = html.Div([
 def update_title(secteur):
 
     if not secteur:
-        return "Graphiques analytiques"
+        return html.Div(
+            "Graphiques sectoriels",
+            className="page-title"
+        )
 
-    return f"Graphiques analytiques - {secteur}"
+    return html.Div([
+        html.Span(
+            "Graphiques sectoriels",
+            className="page-title-main"
+        ),
+        html.Span(
+            f" • {secteur}",
+            className="page-title-sector"
+        )
+    ])
 
 
 # =========================================================
@@ -447,7 +459,7 @@ def generate_graphs(
     if df.empty:
 
         return html.Div(
-            "❌ Aucune donnée disponible",
+            "Aucune donnée disponible",
             className="text-center mt-4 fw-bold text-danger"
         )
 
@@ -457,7 +469,7 @@ def generate_graphs(
     if not indicateurs:
 
         return html.Div(
-            "📈 Sélectionnez un ou plusieurs indicateurs",
+            "Veuillez sélectionnez un ou plusieurs indicateurs",
             className="text-center mt-4 fw-bold text-muted"
         )
 

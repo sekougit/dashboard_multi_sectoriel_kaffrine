@@ -243,7 +243,7 @@ html.Div([
     ),
 
     html.H4(
-        "Dashboard Analytique",
+        "Dashboard Multi-Sectoriel - Kaffrine",
         className="app-title"
     ),
 

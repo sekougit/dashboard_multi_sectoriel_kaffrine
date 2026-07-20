@@ -145,6 +145,8 @@ body{
 
     font-size:12px;
 
+    font-weight:700;
+
 }
 
 
@@ -676,3 +678,23 @@ body{
 
 }
 
+
+.page-title{
+    font-size:30px;
+    font-weight:700;
+    color:#2e7d32;
+    margin-bottom:10px;
+}
+
+.page-title-main{
+    font-size:30px;
+    font-weight:700;
+    color:#2e7d32;
+}
+
+.page-title-sector{
+    font-size:24px;
+    font-weight:700;
+    color:#2e7d32;
+    margin-bottom:10px;
+}
