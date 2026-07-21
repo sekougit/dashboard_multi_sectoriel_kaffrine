@@ -137,35 +137,45 @@ layout = html.Div([
 
             ], className="g-2"),
 
-            html.Div(
+html.Div(
 
-                [
+    [
 
-                    dbc.Button(
-                                                [
-                            html.I(className="bi bi-file-earmark-excel-fill me-2"),
-                            "Télécharger Excel"
-                        ],
-                        id="download-all-excel-btn",
-                        color="success",
-                        className="me-2"
-                    ),
+        dbc.Button(
+            [
+                html.I(className="bi bi-arrow-counterclockwise me-2"),
+                "Réinitialiser"
+            ],
+            id="reset-filters-btn-graphiques",
+            color="warning",
+            outline=True
+        ),
 
-                    dbc.Button(
-                                                [
-                            html.I(className="bi bi-image-fill me-2"),
-                            "Télécharger Images"
-                        ],
-                        id="download-all-images-btn",
-                        color="success",
-                        className="me-2"
-                    ),
 
-                ],
+        dbc.Button(
+            [
+                html.I(className="bi bi-file-earmark-excel-fill me-2"),
+                "Télécharger Excel"
+            ],
+            id="download-all-excel-btn",
+            color="success"
+        ),
 
-                className="d-flex justify-content-end mt-3"
 
-            )
+        dbc.Button(
+            [
+                html.I(className="bi bi-image-fill me-2"),
+                "Télécharger Images"
+            ],
+            id="download-all-images-btn",
+            color="success"
+        )
+
+    ],
+
+    className="d-flex justify-content-end gap-2 mt-3"
+
+)
 
         ],
 
@@ -310,6 +320,80 @@ def update_dropdowns(
     )
 
 
+from dash import ctx
+
+
+# =====================================================
+# RESTAURATION + RESET FILTRES GRAPHIQUES
+# =====================================================
+
+@callback(
+    Output("graph-secteur","value"),
+    Output("graph-annee","value"),
+    Output("graph-region","value"),
+    Output("graph-departement","value"),
+    Output("graph-commune","value"),
+    Output("graph-indicateur","value"),
+
+    Input("graph-secteur","options"),
+    Input("reset-filters-btn-graphiques","n_clicks"),
+
+    State("graph-store","data"),
+
+    prevent_initial_call=False
+)
+def restore_or_reset(options, reset_clicks, data):
+
+    trigger = ctx.triggered_id
+
+
+    # =====================
+    # RESET
+    # =====================
+    if trigger == "reset-filters-btn-graphiques":
+
+        return (
+            dash.no_update, # secteur conservé
+            None,
+            None,
+            None,
+            None,
+            None
+        )
+
+
+    # =====================
+    # RESTORE
+    # =====================
+    if trigger == "graph-secteur":
+
+        if not options:
+            raise dash.exceptions.PreventUpdate
+
+
+        if not data:
+            return (
+                None,
+                None,
+                None,
+                None,
+                None,
+                None
+            )
+
+
+        return (
+            data.get("secteur"),
+            data.get("annee"),
+            data.get("region"),
+            data.get("departement"),
+            data.get("commune"),
+            data.get("indicateur")
+        )
+
+
+    raise dash.exceptions.PreventUpdate
+
 # =========================================================
 # SAVE FILTERS
 # =========================================================
@@ -344,62 +428,62 @@ def save_filters(
     }
 
 
-# =========================================================
-# RESTORE FILTERS
-# =========================================================
-@callback(
-    Output("graph-secteur", "value"),
-    Output("graph-annee", "value"),
-    Output("graph-region", "value"),
-    Output("graph-departement", "value"),
-    Output("graph-commune", "value"),
-    Output("graph-indicateur", "value"),
-    Output("restore-done", "data"),
+# # =========================================================
+# # RESTORE FILTERS
+# # =========================================================
+# @callback(
+#     Output("graph-secteur", "value"),
+#     Output("graph-annee", "value"),
+#     Output("graph-region", "value"),
+#     Output("graph-departement", "value"),
+#     Output("graph-commune", "value"),
+#     Output("graph-indicateur", "value"),
+#     Output("restore-done", "data"),
 
-    Input("graph-secteur", "options"),
+#     Input("graph-secteur", "options"),
 
-    State("graph-store", "data"),
-    State("restore-done", "data"),
-)
-def restore_filters(
-    options,
-    data,
-    done
-):
+#     State("graph-store", "data"),
+#     State("restore-done", "data"),
+# )
+# def restore_filters(
+#     options,
+#     data,
+#     done
+# ):
 
-    if done:
+#     if done:
 
-        return (
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            True
-        )
+#         return (
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             True
+#         )
 
-    if not data:
+#     if not data:
 
-        return (
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            True
-        )
+#         return (
+#             None,
+#             None,
+#             None,
+#             None,
+#             None,
+#             None,
+#             True
+#         )
 
-    return (
-        data.get("secteur"),
-        data.get("annee"),
-        data.get("region"),
-        data.get("departement"),
-        data.get("commune"),
-        data.get("indicateur"),
-        True
-    )
+#     return (
+#         data.get("secteur"),
+#         data.get("annee"),
+#         data.get("region"),
+#         data.get("departement"),
+#         data.get("commune"),
+#         data.get("indicateur"),
+#         True
+#     )
 
 
 # =========================================================

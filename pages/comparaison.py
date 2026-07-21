@@ -304,25 +304,42 @@ layout = html.Div([
 
         ], className="g-2 mt-2"),
 
-        dbc.Row([
+dbc.Row([
 
-            dbc.Col([
+    dbc.Col([
 
-                html.Div([
-                    html.I(className="bi bi-bar-chart-line-fill me-1"),
-                    " Indicateurs"
-                ], className="filter-title"),
+        html.Div([
+            html.I(className="bi bi-bar-chart-line-fill me-1"),
+            " Indicateurs"
+        ], className="filter-title"),
 
-                dcc.Dropdown(
-                    id="comp-indicateurs",
-                    multi=True,
-                    persistence=True,
-                    persistence_type="local"
-                )
+        dcc.Dropdown(
+            id="comp-indicateurs",
+            multi=True,
+            persistence=True,
+            persistence_type="local"
+        )
 
-            ], width=12)
+    ], width=10),
 
-        ], className="g-2 mt-2"),
+
+    dbc.Col([
+
+        dbc.Button(
+            [
+                html.I(className="bi bi-arrow-counterclockwise me-2"),
+                "Réinitialiser"
+            ],
+            id="reset-comparaison-btn",
+            color="warning",
+            outline=True,
+            className="mt-4"
+        )
+
+    ], width=2)
+
+
+], className="g-1 mt-2 align-items-center")
 
     ], className="graph-toolbar"),
 
@@ -599,6 +616,116 @@ def update_dropdowns(
 
     )
 
+from dash import ctx
+
+
+# =========================================================
+# RESTORE + RESET FILTERS
+# =========================================================
+
+@callback(
+
+    Output("comp-secteur", "value"),
+    Output("comp-annee1", "value"),
+    Output("comp-annee2", "value"),
+    Output("comp-region", "value"),
+    Output("comp-departement", "value"),
+    Output("comp-commune", "value"),
+    Output("comp-indicateurs", "value"),
+    Output("comparaison-restore-done", "data"),
+
+
+    Input("comp-secteur", "options"),
+    Input("reset-comparaison-btn", "n_clicks"),
+
+
+    State("comparaison-store", "data"),
+    State("comparaison-restore-done", "data"),
+
+
+    prevent_initial_call=False
+)
+def restore_or_reset(
+    options,
+    reset_click,
+    data,
+    done
+):
+
+    trigger = ctx.triggered_id
+
+
+    # ===============================
+    # RESET
+    # ===============================
+
+    if trigger == "reset-comparaison-btn":
+
+        return (
+
+            dash.no_update,  # secteur reste
+
+            None,            # année N-1
+            None,            # année N
+
+            None,            # région
+            None,            # département
+            None,            # commune
+
+            None,            # indicateurs
+
+            True
+        )
+
+
+    # ===============================
+    # RESTAURATION
+    # ===============================
+
+    if trigger == "comp-secteur":
+
+        if not options:
+            raise dash.exceptions.PreventUpdate
+
+
+        if not data:
+
+            return (
+
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+
+                True
+            )
+
+
+        return (
+
+            data.get("secteur"),
+
+            data.get("annee1"),
+
+            data.get("annee2"),
+
+            data.get("region"),
+
+            data.get("departement"),
+
+            data.get("commune"),
+
+            data.get("indicateurs"),
+
+            True
+        )
+
+
+    raise dash.exceptions.PreventUpdate
+
 # =========================================================
 # SAVE FILTERS
 # =========================================================
@@ -643,81 +770,81 @@ def save_filters(
 
     }
 
-# =========================================================
-# RESTORE FILTERS
-# =========================================================
-@callback(
+# # =========================================================
+# # RESTORE FILTERS
+# # =========================================================
+# @callback(
 
-    Output("comp-secteur", "value"),
-    Output("comp-annee1", "value"),
-    Output("comp-annee2", "value"),
-    Output("comp-region", "value"),
-    Output("comp-departement", "value"),
-    Output("comp-commune", "value"),
-    Output("comp-indicateurs", "value"),
-    Output("comparaison-restore-done", "data"),
+#     Output("comp-secteur", "value"),
+#     Output("comp-annee1", "value"),
+#     Output("comp-annee2", "value"),
+#     Output("comp-region", "value"),
+#     Output("comp-departement", "value"),
+#     Output("comp-commune", "value"),
+#     Output("comp-indicateurs", "value"),
+#     Output("comparaison-restore-done", "data"),
 
-    Input("comp-secteur", "options"),
+#     Input("comp-secteur", "options"),
 
-    State("comparaison-store", "data"),
-    State("comparaison-restore-done", "data")
+#     State("comparaison-store", "data"),
+#     State("comparaison-restore-done", "data")
 
-)
-def restore_filters(
-    options,
-    data,
-    done
-):
+# )
+# def restore_filters(
+#     options,
+#     data,
+#     done
+# ):
 
-    if done:
+#     if done:
 
-        return (
+#         return (
 
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            dash.no_update,
-            True
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             dash.no_update,
+#             True
 
-        )
+#         )
 
-    if not data:
+#     if not data:
 
-        return (
+#         return (
 
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            True
+#             None,
+#             None,
+#             None,
+#             None,
+#             None,
+#             None,
+#             None,
+#             True
 
-        )
+#         )
 
-    return (
+#     return (
 
-        data.get("secteur"),
+#         data.get("secteur"),
 
-        data.get("annee1"),
+#         data.get("annee1"),
 
-        data.get("annee2"),
+#         data.get("annee2"),
 
-        data.get("region"),
+#         data.get("region"),
 
-        data.get("departement"),
+#         data.get("departement"),
 
-        data.get("commune"),
+#         data.get("commune"),
 
-        data.get("indicateurs"),
+#         data.get("indicateurs"),
 
-        True
+#         True
 
-    )
+#     )
 
 
 def _get_base_data(secteur, annee1, annee2, regions, deps, communes, indicateurs):

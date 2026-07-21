@@ -35,6 +35,15 @@ layout = html.Div([
 
 dcc.Download(id="download-kpi"),
 
+dcc.Store(
+    id="restore-done",
+    data=False
+),
+
+dcc.Store(
+    id="filters-store",
+    storage_type="local"
+),
 # =====================================================
 # BARRE STICKY
 # =====================================================
@@ -132,22 +141,34 @@ html.Div([
 
     ], className="g-2"),
 
-    html.Div(
+html.Div(
+    [
 
         dbc.Button(
-                            [
-                    html.I(className="bi bi-download me-2"),
-                    "Télécharger KPI"
-                ],
-                id="download-kpi-btn",
-                color="success",
-                className="me-2"
+            [
+                html.I(className="bi bi-arrow-counterclockwise me-2"),
+                "Réinitialiser"
+            ],
+            id="reset-filters-btn-secteurs",
+            color="warning",
+            outline=True
         ),
 
-        className="d-flex justify-content-end mt-3"
 
-    )
+        dbc.Button(
+            [
+                html.I(className="bi bi-download me-2"),
+                "Télécharger KPI"
+            ],
+            id="download-kpi-btn",
+            color="success"
+        )
 
+    ],
+
+    className="d-flex justify-content-end gap-2 mt-3"
+
+)
 ],
 className="graph-toolbar"
 ),
@@ -279,6 +300,82 @@ def update_filters(secteur, regions, departements):
 #         format("📍 Commune", com),
 #     ], className="d-flex gap-2 flex-wrap")
 
+from dash import ctx
+
+
+# =====================================================
+# RESTAURATION + RESET FILTRES
+# =====================================================
+
+@callback(
+    Output("secteur-dd","value"),
+    Output("annee-dd","value"),
+    Output("region-dd","value"),
+    Output("departement-dd","value"),
+    Output("commune-dd","value"),
+    Output("indicateur-dd","value"),
+
+    Input("secteur-dd","options"),
+    Input("reset-filters-btn-secteurs","n_clicks"),
+
+    State("filters-store","data"),
+
+    prevent_initial_call=False
+)
+def restore_or_reset(options, reset_clicks, data):
+
+    trigger = ctx.triggered_id
+
+
+    # ==========================
+    # CAS RESET
+    # ==========================
+    if trigger == "reset-filters-btn-secteurs":
+
+        return (
+            dash.no_update,  # conserver secteur
+            None,            # année
+            None,            # région
+            None,            # département
+            None,            # commune
+            None             # indicateur
+        )
+
+
+    # ==========================
+    # CAS RESTAURATION
+    # ==========================
+    if trigger == "secteur-dd":
+
+        if not options:
+            raise dash.exceptions.PreventUpdate
+
+
+        if not data:
+            return (
+                None,
+                None,
+                None,
+                None,
+                None,
+                None
+            )
+
+
+        return (
+            data.get("secteur"),
+            data.get("annee"),
+            data.get("region"),
+            data.get("departement"),
+            data.get("commune"),
+            data.get("indicateur")
+        )
+
+
+    raise dash.exceptions.PreventUpdate
+
+
+# ,allow_duplicate=True
 @callback(
     Output("filters-store", "data"),
 
@@ -300,29 +397,31 @@ def save_filters(s, a, r, d, c, i):
         "indicateur": i
     }
 
-@callback(
-    Output("secteur-dd", "value"),
-    Output("annee-dd", "value"),
-    Output("region-dd", "value"),
-    Output("departement-dd", "value"),
-    Output("commune-dd", "value"),
-    Output("indicateur-dd", "value"),
+# @callback(
+#     Output("secteur-dd", "value"),
+#     Output("annee-dd", "value"),
+#     Output("region-dd", "value"),
+#     Output("departement-dd", "value"),
+#     Output("commune-dd", "value"),
+#     Output("indicateur-dd", "value"),
 
-    Input("filters-store", "data"),
-)
-def restore_filters(data):
+#     Input("filters-store", "data"),
+# )
+# def restore_filters(data):
 
-    if not data:
-        return None, None, None, None, None, None
+#     if not data:
+#         return None, None, None, None, None, None
 
-    return (
-        data.get("secteur"),
-        data.get("annee"),
-        data.get("region"),
-        data.get("departement"),
-        data.get("commune"),
-        data.get("indicateur"),
-    )
+#     return (
+#         data.get("secteur"),
+#         data.get("annee"),
+#         data.get("region"),
+#         data.get("departement"),
+#         data.get("commune"),
+#         data.get("indicateur"),
+#     )
+
+from dash import ctx
 
 # =====================================================
 # LIBELLÉ ZONE (Département : X    Commune : Y)
