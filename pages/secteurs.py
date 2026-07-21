@@ -324,6 +324,20 @@ def restore_filters(data):
         data.get("indicateur"),
     )
 
+# =====================================================
+# LIBELLÉ ZONE (Département : X    Commune : Y)
+# =====================================================
+def format_zone_label(data):
+
+    deps = sorted(data["departement"].dropna().unique())
+    coms = sorted(data["commune"].dropna().unique())
+
+    departement = deps[0] if len(deps) == 1 else " / ".join(deps)
+    commune = coms[0] if len(coms) == 1 else "Toutes"
+
+    return f"Département : {departement} | Commune : {commune}"
+
+
 @callback(
     Output("kpi-container", "children"),
     Input("secteur-dd", "value"),
@@ -383,24 +397,23 @@ def update_kpis(
     # =========================
     # DIMENSION DE COMPARAISON
     # =========================
-    compare_dim = None
+    compare_dims = []
 
     if annees and len(annees) > 1:
-        compare_dim = "annee"
+        compare_dims.append("annee")
 
-    elif regions and len(regions) > 1:
-        compare_dim = "region"
+    if regions and len(regions) > 1:
+        compare_dims.append("region")
 
-    elif departements and len(departements) > 1:
-        compare_dim = "departement"
+    if departements and len(departements) > 1:
+        compare_dims.append("departement")
 
-    elif communes and len(communes) > 1:
-        compare_dim = "commune"
-
+    if communes and len(communes) > 1:
+        compare_dims.append("commune")
     # =====================================================
     # MODE NORMAL
     # =====================================================
-    if compare_dim is None:
+    if len(compare_dims) == 0:
 
         cards = []
 
@@ -457,14 +470,23 @@ def update_kpis(
 
             )
 
-        return dbc.Row(cards, className="g-3 mt-2")
+        return html.Div([
+
+            html.H5(
+                format_zone_label(df),
+                className="zone-title"
+            ),
+
+            dbc.Row(cards, className="g-3 mt-2")
+
+        ], className="zone-block")
 
     # =====================================================
     # MODE COMPARAISON
     # =====================================================
     blocks = []
 
-    for key, group in df.groupby(compare_dim):
+    for key, group in df.groupby(compare_dims):
 
         cards = []
 
@@ -521,23 +543,48 @@ def update_kpis(
 
             )
 
+        # ---- Titre du bloc ----
+# ---- Titre du bloc (ordre fixe : Année | Département | Commune) ----
+        if not isinstance(key, tuple):
+            key = (key,)
+
+        # ANNEE
+        if "annee" in compare_dims:
+            annee_val = key[compare_dims.index("annee")]
+        else:
+            annees_u = sorted(group["annee"].dropna().unique())
+            annee_val = annees_u[0] if len(annees_u) == 1 else ("Toutes" if annees_u else "—")
+
+        # DEPARTEMENT
+        if "departement" in compare_dims:
+            departement = key[compare_dims.index("departement")]
+        else:
+            deps = sorted(group["departement"].dropna().unique())
+            departement = deps[0] if len(deps) == 1 else (" / ".join(deps) if deps else "—")
+
+        # COMMUNE
+        if "commune" in compare_dims:
+            commune = key[compare_dims.index("commune")]
+        else:
+            coms = sorted(group["commune"].dropna().unique())
+            commune = coms[0] if len(coms) == 1 else ("Toutes" if coms else "—")
+
+        titre = f"Année : {annee_val} | Département : {departement} | Commune : {commune}"
+
         blocks.append(
 
             html.Div([
 
                 html.H5(
-                    f"{compare_dim.upper()} : {key}",
+                    titre,
                     className="zone-title"
                 ),
 
-                dbc.Row(cards, className="g-3")
-
-            ])
+                dbc.Row(cards, className="g-3"),
+            ], className="zone-block")
 
         )
-
     return blocks
-
 
 @callback(
     Output("download-kpi", "data"),

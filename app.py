@@ -4,6 +4,8 @@ import dash_bootstrap_components as dbc
 from auth import init_auth
 from login import login_bp
 
+import dash_ag_grid as dag
+
 from flask import request, redirect
 from flask_login import current_user
 
@@ -235,22 +237,27 @@ app.layout = html.Div([
 # TOPBAR
 html.Div([
 
-    html.Button(
-        "☰",
-        id="toggle-btn",
-        n_clicks=0,
-        className="toggle-btn"
-    ),
+    html.Div([
 
-    html.H4(
-        "Dashboard Multi-Sectoriel - Kaffrine",
-        className="app-title"
-    ),
+        html.Button(
+            "☰",
+            id="toggle-btn",
+            n_clicks=0,
+            className="toggle-btn"
+        ),
 
-html.Div(
-    id="user-profile",
-    className="user-profile"
-)
+        html.H4(
+            "Dashboard Multi-Sectoriel - Kaffrine",
+            className="app-title"
+        ),
+
+    ], className="topbar-left"),
+
+    html.Div(
+        id="user-profile",
+        className="user-profile"
+    )
+
 ], className="topbar"),
 
     # STORES

@@ -13,3 +13,4 @@ gspread
 google-auth
 bcrypt
 datetime
+dash_ag_grid
