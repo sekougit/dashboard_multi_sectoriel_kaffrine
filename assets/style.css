@@ -367,24 +367,15 @@ body{
 .graph-toolbar{
 
     position:sticky;
-
     top:70px;
 
-    z-index:900;
-
     background:white;
-
     border-radius:14px;
-
     padding:14px 18px;
-
-    margin-bottom:20px;
 
     box-shadow:0 3px 12px rgba(0,0,0,.08);
 
-    max-height:40vh;
-
-    overflow-y:auto;
+    overflow:visible;
 
 }
 
@@ -491,7 +482,8 @@ body{
  
     box-shadow:0 3px 10px rgba(0,0,0,.06);
  
-    height:120px;
+    min-height:120px;
+    height:auto;
  
     transition:.2s;
  
@@ -555,7 +547,8 @@ body{
  
     line-height:1.2;
  
-    white-space:nowrap;
+    white-space:normal;
+    word-break:break-word;
  
 }
 
@@ -659,21 +652,14 @@ body{
 
 }
 
-.graph-toolbar{
+   .graph-toolbar{
 
-    top:65px;
+        position:relative;
+        top:auto;
+        padding:12px;
+        overflow:visible;
 
-    max-height:32vh;
-
-    position:relative;
-
-    /*top:auto;*/
-
-    border-radius:10px;
-
-    padding:12px;
-
-}
+    }
 
 }
 
@@ -698,17 +684,14 @@ body{
 
 }
 
-.graph-toolbar{
+    .graph-toolbar{
 
-    top:65px;
+        position:relative;
+        top:auto;
+        padding:12px;
+        overflow:visible;
 
-    padding:12px;
-
-    max-height:28vh;
-
-    overflow-y:auto;
-
-}
+    }
 
 .filters-bar > *{
 
