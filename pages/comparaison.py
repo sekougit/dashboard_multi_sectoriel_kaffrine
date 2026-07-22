@@ -2,7 +2,6 @@ import io
 import dash
 import pandas as pd
 import dash_bootstrap_components as dbc
-import dash_ag_grid as dag
 import plotly.express as px
 
 from dash import (
@@ -42,7 +41,7 @@ COULEUR_STABLE = "#64748b"
 
 
 # ==========================================================
-# CALCUL PARTAGÉ (KPI / Graphiques / Tableau utilisent tous ceci)
+# CALCUL PARTAGÉ (KPI et Graphiques utilisent tous les deux ceci)
 # ==========================================================
 def compute_comparaison_data(
     df,
@@ -196,8 +195,12 @@ layout = html.Div([
         data=False
     ),
 
+    dcc.Store(id="comp-mode", data="kpi"),
+
     # =====================================================
-    # BARRE STICKY
+    # BARRE STICKY (filtres + mode + export + réinitialiser,
+    # tout regroupé pour laisser un maximum de place visible
+    # aux graphiques/KPI en dessous)
     # =====================================================
     html.Div([
 
@@ -304,97 +307,81 @@ layout = html.Div([
 
         ], className="g-2 mt-2"),
 
-dbc.Row([
+        # =================================================
+        # LIGNE : Indicateurs | Mode (KPI/Graphiques)
+        #         | Export Excel | Réinitialiser
+        # =================================================
+        dbc.Row([
 
-    dbc.Col([
+            dbc.Col([
 
-        html.Div([
-            html.I(className="bi bi-bar-chart-line-fill me-1"),
-            " Indicateurs"
-        ], className="filter-title"),
+                html.Div([
+                    html.I(className="bi bi-bar-chart-line-fill me-1"),
+                    " Indicateurs"
+                ], className="filter-title"),
 
-        dcc.Dropdown(
-            id="comp-indicateurs",
-            multi=True,
-            persistence=True,
-            persistence_type="local"
-        )
+                dcc.Dropdown(
+                    id="comp-indicateurs",
+                    multi=True,
+                    persistence=True,
+                    persistence_type="local"
+                )
 
-    ], width=10),
+            ], xs=12, md=5, lg=5),
 
+            dbc.Col([
 
-    dbc.Col([
+                dbc.ButtonGroup([
 
-        dbc.Button(
-            [
-                html.I(className="bi bi-arrow-counterclockwise me-2"),
-                "Réinitialiser"
-            ],
-            id="reset-comparaison-btn",
-            color="warning",
-            outline=True,
-            className="mt-4"
-        )
+                    dbc.Button(
+                        [html.I(className="bi bi-speedometer2 me-2"), "KPI"],
+                        id={"type": "comp-mode-btn", "mode": "kpi"},
+                        color="success",
+                        outline=True,
+                        active=True,
+                    ),
 
-    ], width=2)
+                    dbc.Button(
+                        [html.I(className="bi bi-bar-chart-line-fill me-2"), "Graphiques"],
+                        id={"type": "comp-mode-btn", "mode": "graphiques"},
+                        color="success",
+                        outline=True,
+                    ),
 
+                ]),
 
-], className="g-1 mt-2 align-items-center")
+            ], xs=12, sm="auto", className="d-flex align-items-end mt-3 mt-md-0"),
+
+            dbc.Col([
+
+                dbc.Button(
+                    [
+                        html.I(className="bi bi-download me-2"),
+                        "Exporter Excel"
+                    ],
+                    id="export-comparaison-btn",
+                    color="success"
+                ),
+
+            ], xs=6, sm="auto", className="d-flex align-items-end mt-3 mt-md-0"),
+
+            dbc.Col([
+
+                dbc.Button(
+                    [
+                        html.I(className="bi bi-arrow-counterclockwise me-2"),
+                        "Réinitialiser"
+                    ],
+                    id="reset-comparaison-btn",
+                    color="warning",
+                    outline=True,
+                ),
+
+            ], xs=6, sm="auto", className="d-flex align-items-end mt-3 mt-md-0 ms-sm-auto"),
+
+        ], className="g-2 mt-2 align-items-end"),
 
     ], className="graph-toolbar"),
-
-    # =================================================
-    # BARRE MODE + EXPORT (hors du toolbar sticky,
-    # pour ne pas grignoter la place des graphiques/KPI/tableau)
-    # =================================================
-    dbc.Row([
-
-        dbc.Col([
-
-            dcc.Store(id="comp-mode", data="kpi"),
-
-            dbc.ButtonGroup([
-
-                dbc.Button(
-                    [html.I(className="bi bi-speedometer2 me-2"), "KPI"],
-                    id={"type": "comp-mode-btn", "mode": "kpi"},
-                    color="success",
-                    outline=True,
-                    active=True,
-                ),
-
-                dbc.Button(
-                    [html.I(className="bi bi-bar-chart-line-fill me-2"), "Graphiques"],
-                    id={"type": "comp-mode-btn", "mode": "graphiques"},
-                    color="success",
-                    outline=True,
-                ),
-
-                dbc.Button(
-                    [html.I(className="bi bi-table me-2"), "Tableau"],
-                    id={"type": "comp-mode-btn", "mode": "tableau"},
-                    color="success",
-                    outline=True,
-                ),
-
-            ]),
-
-        ], width="auto"),
-
-        dbc.Col([
-
-            dbc.Button(
-                [
-                    html.I(className="bi bi-download me-2"),
-                    "Exporter Excel"
-                ],
-                id="export-comparaison-btn",
-                color="success"
-            ),
-
-        ], width="auto", className="ms-auto"),
-
-    ], className="g-2 my-3 align-items-center"),
 
     html.Br(),
 
@@ -414,45 +401,6 @@ dbc.Row([
     html.Div(
         id="comparaison-graphs-container"
     ),
-
-    # =====================================================
-    # MODE TABLEAU
-    # =====================================================
-    html.Div(
-
-        dag.AgGrid(
-
-            id="comparaison-grid",
-
-            columnDefs=[],
-
-            rowData=[],
-
-            defaultColDef={
-                "sortable": True,
-                "filter": True,
-                "resizable": True,
-                "floatingFilter": True,
-            },
-
-            dashGridOptions={
-                "pagination": True,
-                "paginationPageSize": 20,
-                "animateRows": True,
-            },
-
-            className="ag-theme-alpine",
-
-            style={
-                "height": "700px",
-                "width": "100%"
-            }
-
-        ),
-
-        id="comparaison-table-container"
-
-    )
 
 ])
 
@@ -526,7 +474,6 @@ def switch_mode(n_clicks_list, ids):
 @callback(
     Output("comparaison-kpi-container", "style"),
     Output("comparaison-graphs-container", "style"),
-    Output("comparaison-table-container", "style"),
     Input("comp-mode", "data")
 )
 def toggle_mode(mode):
@@ -537,7 +484,6 @@ def toggle_mode(mode):
     return (
         visible if mode == "kpi" else hidden,
         visible if mode == "graphiques" else hidden,
-        visible if mode == "tableau" else hidden,
     )
 
 
@@ -615,8 +561,6 @@ def update_dropdowns(
         [{"label": i, "value": i} for i in indicateurs],
 
     )
-
-from dash import ctx
 
 
 # =========================================================
@@ -770,82 +714,6 @@ def save_filters(
 
     }
 
-# # =========================================================
-# # RESTORE FILTERS
-# # =========================================================
-# @callback(
-
-#     Output("comp-secteur", "value"),
-#     Output("comp-annee1", "value"),
-#     Output("comp-annee2", "value"),
-#     Output("comp-region", "value"),
-#     Output("comp-departement", "value"),
-#     Output("comp-commune", "value"),
-#     Output("comp-indicateurs", "value"),
-#     Output("comparaison-restore-done", "data"),
-
-#     Input("comp-secteur", "options"),
-
-#     State("comparaison-store", "data"),
-#     State("comparaison-restore-done", "data")
-
-# )
-# def restore_filters(
-#     options,
-#     data,
-#     done
-# ):
-
-#     if done:
-
-#         return (
-
-#             dash.no_update,
-#             dash.no_update,
-#             dash.no_update,
-#             dash.no_update,
-#             dash.no_update,
-#             dash.no_update,
-#             dash.no_update,
-#             True
-
-#         )
-
-#     if not data:
-
-#         return (
-
-#             None,
-#             None,
-#             None,
-#             None,
-#             None,
-#             None,
-#             None,
-#             True
-
-#         )
-
-#     return (
-
-#         data.get("secteur"),
-
-#         data.get("annee1"),
-
-#         data.get("annee2"),
-
-#         data.get("region"),
-
-#         data.get("departement"),
-
-#         data.get("commune"),
-
-#         data.get("indicateurs"),
-
-#         True
-
-#     )
-
 
 def _get_base_data(secteur, annee1, annee2, regions, deps, communes, indicateurs):
     """Charge + filtre les données, retourne (df, ok). ok=False si rien à calculer."""
@@ -910,9 +778,15 @@ def render_kpi_mode(secteur, annee1, annee2, regions, deps, communes, indicateur
 
     zone_cols = ["region", "departement", "commune"]
 
-    blocks = []
+    zone_keys = resultat_df[zone_cols].drop_duplicates()
 
-    for _, zone_key in resultat_df[zone_cols].drop_duplicates().iterrows():
+    # FIX affichage : les blocs par zone (département/commune) sont
+    # placés côte à côte (2 par ligne sur écran moyen/large) plutôt
+    # qu'empilés verticalement — comparer 2 départements/communes
+    # tient alors sur un seul écran sans avoir à scroller.
+    zone_blocks = []
+
+    for _, zone_key in zone_keys.iterrows():
 
         sous_df = resultat_df[
             (resultat_df.region == zone_key["region"]) &
@@ -969,28 +843,39 @@ def render_kpi_mode(secteur, annee1, annee2, regions, deps, communes, indicateur
 
                     ], className="kpi-card"),
 
-                    xs=12, sm=6, md=4, lg=3, xl=3
+                    # 2 cartes par ligne À L'INTÉRIEUR d'un bloc zone,
+                    # pour que le bloc reste compact même côte à côte
+                    xs=12, sm=6, md=6, lg=6, xl=6
 
                 )
 
             )
 
-        blocks.append(
+        zone_blocks.append(
 
-            html.Div([
+            dbc.Col(
 
-                html.H5(
-                    zone_label(zone_key, communes, deps),
-                    className="zone-title"
-                ),
+                html.Div([
 
-                dbc.Row(cards, className="g-3")
+                    html.H5(
+                        zone_label(zone_key, communes, deps),
+                        className="zone-title"
+                    ),
 
-            ], className="zone-block")
+                    dbc.Row(cards, className="g-3")
+
+                ], className="zone-block"),
+
+                # Un bloc zone = la moitié de la largeur dès md,
+                # donc 2 zones (2 départements/communes) se
+                # retrouvent côte à côte au lieu d'être empilées.
+                xs=12, md=6
+
+            )
 
         )
 
-    return blocks
+    return dbc.Row(zone_blocks, className="g-3")
 
 
 # ==========================================================
@@ -1244,34 +1129,53 @@ def export_comp_graph_excel(
 
 
 # ==========================================================
-# MODE TABLEAU
+# EXPORT EXCEL GLOBAL (bouton "Exporter Excel" du toolbar)
+# Recalcule directement depuis les filtres — ne dépend plus
+# d'un tableau AgGrid (supprimé).
 # ==========================================================
 @callback(
 
-    Output("comparaison-grid", "columnDefs"),
-    Output("comparaison-grid", "rowData"),
+    Output("download-comparaison", "data"),
 
-    Input("comp-secteur", "value"),
-    Input("comp-annee1", "value"),
-    Input("comp-annee2", "value"),
-    Input("comp-region", "value"),
-    Input("comp-departement", "value"),
-    Input("comp-commune", "value"),
-    Input("comp-indicateurs", "value")
+    Input("export-comparaison-btn", "n_clicks"),
 
+    State("comp-secteur", "value"),
+    State("comp-annee1", "value"),
+    State("comp-annee2", "value"),
+    State("comp-region", "value"),
+    State("comp-departement", "value"),
+    State("comp-commune", "value"),
+    State("comp-indicateurs", "value"),
+
+    prevent_initial_call=True
 )
-def render_table_mode(secteur, annee1, annee2, regions, deps, communes, indicateurs):
+def export_excel(
+    n,
+    secteur,
+    annee1,
+    annee2,
+    regions,
+    deps,
+    communes,
+    indicateurs
+):
+
+    if not n:
+        return dash.no_update
 
     df, ok = _get_base_data(secteur, annee1, annee2, regions, deps, communes, indicateurs)
 
     if not ok:
-        return [], []
+        return dash.no_update
 
     data = compute_comparaison_data(
         df, secteur, annee1, annee2, regions, deps, communes, indicateurs
     )
 
-    resultat = [
+    if not data:
+        return dash.no_update
+
+    export_df = pd.DataFrame([
         {
             "Secteur": row["secteur"],
             "Région": row["region"],
@@ -1285,94 +1189,10 @@ def render_table_mode(secteur, annee1, annee2, regions, deps, communes, indicate
             "Tendance": row["tendance"],
         }
         for row in data
-    ]
-
-    colonnes = [
-        {"field": "Secteur", "pinned": "left"}
-    ]
-
-    if communes:
-        colonnes.extend([
-            {"field": "Région"},
-            {"field": "Département"},
-            {"field": "Commune"}
-        ])
-    elif deps:
-        colonnes.extend([
-            {"field": "Région"},
-            {"field": "Département"}
-        ])
-    elif regions:
-        colonnes.append({"field": "Région"})
-    else:
-        colonnes.extend([
-            {"field": "Région"},
-            {"field": "Département"},
-            {"field": "Commune"}
-        ])
-
-    colonnes.append({"field": "Indicateur"})
-
-    style_evolution = {
-        "styleConditions": [
-            {
-                "condition": "params.value > 0",
-                "style": {"color": "green", "fontWeight": "bold"}
-            },
-            {
-                "condition": "params.value < 0",
-                "style": {"color": "red", "fontWeight": "bold"}
-            }
-        ]
-    }
-
-    colonnes.extend([
-
-        {"field": str(annee1), "type": "numericColumn"},
-        {"field": str(annee2), "type": "numericColumn"},
-
-        {
-            "field": "Evolution valeur",
-            "type": "numericColumn",
-            "cellStyle": style_evolution
-        },
-
-        {
-            "field": "Evolution %",
-            "type": "numericColumn",
-            "cellStyle": style_evolution
-        },
-
-        {"field": "Tendance", "pinned": "right"}
-
     ])
 
-    return colonnes, resultat
-
-
-@callback(
-
-    Output("download-comparaison", "data"),
-
-    Input("export-comparaison-btn", "n_clicks"),
-
-    State("comparaison-grid", "rowData"),
-
-    prevent_initial_call=True
-
-)
-def export_excel(n, data):
-
-    if not n:
-        return dash.no_update
-
-    if not data:
-        return dash.no_update
-
-    df = pd.DataFrame(data)
-
     return dcc.send_data_frame(
-        df.to_excel,
+        export_df.to_excel,
         "Comparaison.xlsx",
         index=False
     )

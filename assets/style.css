@@ -368,6 +368,7 @@ body{
 
     position:sticky;
     top:70px;
+    z-index:900;
 
     background:white;
     border-radius:14px;
@@ -421,14 +422,6 @@ body{
     border-radius:10px;
 
 }
-
-/* le tableau passe sous la barre */
-
-/*.ag-theme-alpine{
-
-    margin-top:10px;
-
-} */
 
 
 /* ==========================================================
@@ -605,6 +598,8 @@ body{
 .zone-block{
 
     margin-bottom:10px;
+
+    height:100%;
 
 }
 /* ==========================================================

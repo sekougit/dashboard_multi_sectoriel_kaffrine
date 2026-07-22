@@ -212,7 +212,7 @@ desktop_sidebar = html.Div(
 mobile_drawer = dbc.Offcanvas(
     sidebar_content,
     id="mobile-drawer",
-    title="📊 Navigation",
+    title="Navigation",
     is_open=False,
     placement="start",
     className="mobile-drawer"

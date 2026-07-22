@@ -654,6 +654,18 @@ def generate_graphs(
                 f"{int(r[ind]):,}\n({r['y']:.1f}%)".replace(",", " "),
                 axis=1
             )
+
+        # =================================================
+        # ORDRE DÉCROISSANT DES BARRES
+        # =================================================
+        ordre = (
+            grouped.groupby(dimension)[ind]
+            .sum()
+            .sort_values(ascending=False)
+            .index
+            .tolist()
+        )
+
         # =================================================
         # FIGURE
         # =================================================
@@ -671,8 +683,10 @@ def generate_graphs(
             color=grouped["annee"].astype(str),
             color_discrete_map=color_map,
             barmode="stack" if (stack_mode and not is_rate_indicator(ind)) else "group",
-            text="label"
+            text="label",
+            category_orders={dimension: ordre}
         )
+
         fig.update_layout(
             title={
                 "text": f"<b>{ind} ({titre})</b>",
