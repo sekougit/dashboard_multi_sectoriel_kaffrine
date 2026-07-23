@@ -144,7 +144,7 @@ html.Div(
         dbc.Button(
             [
                 html.I(className="bi bi-arrow-counterclockwise me-2"),
-                "Réinitialiser"
+                "éffacer filtres"
             ],
             id="reset-filters-btn-graphiques",
             color="warning",

@@ -3,6 +3,7 @@ from dash import html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 from auth import init_auth
 from login import login_bp
+from utils.data_loader import clear_cache
 
 import dash_ag_grid as dag
 
@@ -253,11 +254,26 @@ html.Div([
 
     ], className="topbar-left"),
 
+html.Div([
+
+    dbc.Button(
+        [
+            html.I(className="bi bi-arrow-clockwise me-2"),
+            "Actualiser"
+        ],
+        id="refresh-data-btn",
+        color="light",
+        outline=True,
+        size="sm",
+        className="me-3"
+    ),
+
     html.Div(
         id="user-profile",
         className="user-profile"
     )
 
+], className="d-flex align-items-center")
 ], className="topbar"),
 
     # STORES
@@ -270,6 +286,9 @@ html.Div([
         id="graph-store",
         storage_type="local"
     ),
+
+    dcc.Store(id="cache-cleared-store"),
+html.Div(id="dummy-reload-output", style={"display": "none"}),
 
     # MOBILE DRAWER
     mobile_drawer,
@@ -368,6 +387,37 @@ def update_user_profile(_):
 
     ]
 
+# =========================
+# ACTUALISER LES DONNÉES
+# =========================
+@callback(
+    Output("cache-cleared-store", "data"),
+    Input("refresh-data-btn", "n_clicks"),
+    prevent_initial_call=True
+)
+def refresh_data(n):
+
+    if not n:
+        return dash.no_update
+
+    clear_cache()
+
+    return n
+
+
+app.clientside_callback(
+    """
+    function(data) {
+        if (data) {
+            window.location.reload();
+        }
+        return "";
+    }
+    """,
+    Output("dummy-reload-output", "children"),
+    Input("cache-cleared-store", "data"),
+    prevent_initial_call=True
+)
 
 # =========================
 # RUN

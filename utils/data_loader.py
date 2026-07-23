@@ -252,6 +252,8 @@ def load_sector_data(sector):
 
     return df
 
+def clear_cache():
+    load_sector_data.cache_clear()
 
 # =========================
 # UNIQUE VALUES

@@ -285,7 +285,7 @@ button:hover{
         <h1 class="marque-titre">Dashboard Multi&#8209;Sectoriel</h1>
         <p class="marque-soustitre">
             Le suivi des indicateurs de développement territorial,
-            secteur par secteur, commune par commune.
+            selon le secteur par année, departement et communes.
         </p>
     </div>
 
@@ -336,7 +336,7 @@ button:hover{
         </form>
 
         <div class="login-footer">
-            Dashboard Multi-Sectoriel Kaffrine — accès réservé
+            © - 2026 - Dashboard Multi-Sectoriel Kaffrine — accès réservé
         </div>
 
     </div>
