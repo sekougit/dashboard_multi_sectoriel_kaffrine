@@ -511,7 +511,7 @@ def generate_graphs(
     if not secteur:
 
         return html.Div(
-            "📊 Sélectionnez un secteur",
+            "Sélectionnez un secteur",
             className="text-center mt-4 fw-bold text-muted"
         )
 

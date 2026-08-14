@@ -21,6 +21,10 @@ LOGIN_HTML = """
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+>
 
 <style>
 
@@ -271,6 +275,45 @@ button:hover{
 
 }
 
+.password-wrapper{
+    position:relative;
+}
+
+.password-wrapper input{
+    padding-right:45px;
+}
+
+.password-toggle{
+    position:absolute;
+    right:0;
+    top:0;
+
+    width:45px;
+    height:45px;
+
+    padding:0;
+
+    background:transparent;
+    color:#64748b;
+
+    border:none;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    cursor:pointer;
+}
+
+.password-toggle:hover{
+    background:transparent;
+    color:var(--vert-vif);
+}
+
+.password-toggle i{
+    font-size:18px;
+}
+
 </style>
 </head>
 
@@ -325,11 +368,27 @@ button:hover{
                 autofocus>
 
             <label>Mot de passe</label>
-            <input
-                type="password"
-                name="password"
-                placeholder="••••••••"
-                required>
+
+            <div class="password-wrapper">
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    required>
+
+                <button
+                    type="button"
+                    class="password-toggle"
+                    id="toggle-password"
+                    aria-label="Afficher le mot de passe">
+
+                    <i class="bi bi-eye"></i>
+
+                </button>
+
+            </div>
 
             <button type="submit">Se connecter</button>
 
@@ -342,6 +401,43 @@ button:hover{
     </div>
 
 </div>
+
+<script>
+
+const togglePassword = document.getElementById("toggle-password");
+const password = document.getElementById("password");
+
+togglePassword.addEventListener("click", function(){
+
+    if(password.type === "password"){
+
+        password.type = "text";
+
+        togglePassword.innerHTML =
+            '<i class="bi bi-eye-slash"></i>';
+
+        togglePassword.setAttribute(
+            "aria-label",
+            "Masquer le mot de passe"
+        );
+
+    }else{
+
+        password.type = "password";
+
+        togglePassword.innerHTML =
+            '<i class="bi bi-eye"></i>';
+
+        togglePassword.setAttribute(
+            "aria-label",
+            "Afficher le mot de passe"
+        );
+
+    }
+
+});
+
+</script>
 
 </body>
 </html>
