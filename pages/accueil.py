@@ -64,44 +64,44 @@ layout = html.Div([
     # 1. BANNIÈRE INSTITUTIONNELLE COMPACTE
     # -------------------------------------------------
 
-    html.Div([
+    # html.Div([
 
-        html.Div([
-            html.Div(
-                html.I(className="bi bi-bar-chart-line-fill"),
-                className="home-logo"
-            ),
+    #     html.Div([
+    #         html.Div(
+    #             html.I(className="bi bi-bar-chart-line-fill"),
+    #             className="home-logo"
+    #         ),
 
-            html.Div([
-                html.Div(
-                    "RÉGION DE KAFFRINE",
-                    className="home-eyebrow"
-                ),
-                html.Div(
-                    "Dashboard Multi-Sectoriel",
-                    className="home-brand"
-                )
-            ])
-        ], className="home-brand-row"),
+    #         html.Div([
+    #             html.Div(
+    #                 "RÉGION DE KAFFRINE",
+    #                 className="home-eyebrow"
+    #             ),
+    #             html.Div(
+    #                 "Dashboard Multi-Sectoriel",
+    #                 className="home-brand"
+    #             )
+    #         ])
+    #     ], className="home-brand-row"),
 
-        html.H1(
-            "Bienvenue sur votre espace statistique",
-            className="home-title"
-        ),
+    #     html.H1(
+    #         "Bienvenue sur votre espace statistique",
+    #         className="home-title"
+    #     ),
 
-        html.P(
-            "Explorez les indicateurs de développement territorial, "
-            "analysez leur évolution et comparez les résultats "
-            "entre secteurs et territoires.",
-            className="home-description"
-        ),
+    #     html.P(
+    #         "Explorez les indicateurs de développement territorial, "
+    #         "analysez leur évolution et comparez les résultats "
+    #         "entre secteurs et territoires.",
+    #         className="home-description"
+    #     ),
 
-        html.Div([
-            html.I(className="bi bi-shield-check me-2"),
-            "Plateforme de consultation et d'analyse statistique"
-        ], className="home-status")
+    #     html.Div([
+    #         html.I(className="bi bi-shield-check me-2"),
+    #         "Plateforme de consultation et d'analyse statistique"
+    #     ], className="home-status")
 
-    ], className="home-hero"),
+    # ], className="home-hero"),
 
 
     # -------------------------------------------------
@@ -118,18 +118,30 @@ layout = html.Div([
             )
         ], className="region-intro-heading"),
 
+
+
         html.P(
             "Anciennement rattachée à la région de Kaolack, Kaffrine "
             "a été érigée en région par la loi n° 2008-14 du "
-            "18 mars 2008. Elle comprend quatre départements : "
-            "Birkelane, Kaffrine, Koungheul et Malem Hodar. "
-            "Koungheul est le département le plus vaste avec "
-            "4 237 km² (37,9 % du territoire régional), suivi de "
-            "Malem Hodar avec 3 106 km² (27,8 %), de Kaffrine "
-            "avec 2 716 km² (24,3 %) et de Birkelane avec "
-            "1 122 km² (10,0 %).",
+            "18 mars 2008. Située au centre du Sénégal, au cœur du "
+            "bassin arachidier, elle couvre une superficie de "
+            "11 181 km², soit environ 5,6 % du territoire national. "
+            "En 2025, sa population est estimée à 878 045 habitants, "
+            "avec une densité de 79 habitants au km², contre 96 au "
+            "niveau national. Elle est limitée au nord par les régions "
+            "de Diourbel et de Louga, au nord-ouest par celle de Fatick, "
+            "au nord-est par celle de Matam, à l'est par celle de "
+            "Tambacounda, à l'ouest et au sud-ouest par celle de Kaolack, "
+            "et au sud par la République de Gambie. La région comprend "
+            "quatre départements : Birkelane, Kaffrine, Koungheul et "
+            "Malem Hodar. Koungheul est le plus vaste avec 4 237 km² "
+            "(37,9 % du territoire régional), suivi de Malem Hodar "
+            "avec 3 106 km² (27,8 %), de Kaffrine avec 2 716 km² "
+            "(24,3 %) et de Birkelane avec 1 122 km² (10,0 %).",
             className="region-intro-text"
         )
+
+
 
     ], className="region-intro"),
 
@@ -196,18 +208,18 @@ layout = html.Div([
     # 4. PIED DE PAGE
     # -------------------------------------------------
 
-    html.Div([
+    # html.Div([
 
-        html.Span(
-            "Dashboard Multi-Sectoriel de Kaffrine",
-            className="home-footer-brand"
-        ),
+    #     # html.Span(
+    #     #     "Dashboard Multi-Sectoriel de Kaffrine",
+    #     #     className="home-footer-brand"
+    #     # ),
 
-        html.Span(
-            "Suivi · Analyse · Comparaison",
-            className="home-footer-text"
-        )
+    #     html.Span(
+    #         "Suivi · Analyse · Comparaison",
+    #         className="home-footer-text"
+    #     )
 
-    ], className="home-footer")
+    # ], className="home-footer")
 
 ], className="home-page")

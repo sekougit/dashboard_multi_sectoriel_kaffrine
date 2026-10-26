@@ -75,6 +75,7 @@
     color: #596579;
     font-size: 14px;
     line-height: 1.5;
+    font-weight: 800;
     margin-bottom: 7px;
 }
 
@@ -112,6 +113,8 @@
     color: #596579;
     font-size: 13px;
     line-height: 1.55;
+    font-weight: 900;
+    text-align: justify;
     margin: 0;
 }
 
